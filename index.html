@@ -444,6 +444,18 @@
     .modalContent::-webkit-scrollbar-thumb:hover {
       background: #F77AAC;
     }
+
+    /* Debug panel */
+    .debug-info {
+      font-size: 0.8em;
+      color: #888;
+      margin-top: 10px;
+      padding: 10px;
+      background: rgba(0,0,0,0.3);
+      border-radius: 5px;
+      max-height: 200px;
+      overflow-y: auto;
+    }
   </style>
 </head>
 <body>
@@ -564,6 +576,10 @@
 
         const data = await response.json();
         console.log('Training data loaded successfully:', data);
+        console.log('Modules:', data.modules);
+        console.log('Lessons:', data.lessons);
+        console.log('Lesson Content:', data.lessonContent);
+        
         gameState.trainingData = data;
       } catch (error) {
         console.error('Failed to load training data:', error);
@@ -698,11 +714,27 @@
       title.textContent = location.name;
       description.textContent = `Welcome to the ${location.name}! Choose a training module to begin.`;
 
-      // Get modules for this location
+      // Debug info
+      console.log('Opening location:', location.id);
+      console.log('All modules:', gameState.trainingData?.modules);
+
+      // Get modules for this location - with case-insensitive matching
       if (gameState.trainingData && gameState.trainingData.modules) {
-        const locationModules = gameState.trainingData.modules.filter(
-          module => module.Location_ID === location.id && module.Status === 'active'
-        );
+        const locationModules = gameState.trainingData.modules.filter(module => {
+          const moduleLocId = String(module.Location_ID || '').trim();
+          const targetLocId = String(location.id).trim();
+          const moduleStatus = String(module.Status || '').toLowerCase().trim();
+          
+          console.log(`Comparing module Location_ID: "${moduleLocId}" with "${targetLocId}", Status: "${moduleStatus}"`);
+          
+          // Case-insensitive comparison
+          const locationMatch = moduleLocId.toLowerCase() === targetLocId.toLowerCase();
+          const statusMatch = moduleStatus === 'active' || moduleStatus === '';
+          
+          return locationMatch && statusMatch;
+        });
+
+        console.log('Filtered modules for', location.id, ':', locationModules);
 
         if (locationModules.length > 0) {
           // Sort by Module_Number
@@ -725,9 +757,30 @@
             `;
           });
           html += '</div>';
+          
+          // Add debug info
+          html += `<div class="debug-info">
+            <strong>Debug Info:</strong><br>
+            Location: ${location.id}<br>
+            Modules found: ${locationModules.length}<br>
+            Total modules in data: ${gameState.trainingData.modules.length}
+          </div>`;
+          
           body.innerHTML = html;
         } else {
-          body.innerHTML = '<p>No training modules available for this location yet.</p>';
+          body.innerHTML = `
+            <p>No training modules available for this location yet.</p>
+            <div class="debug-info">
+              <strong>Debug Info:</strong><br>
+              Looking for Location_ID: "${location.id}"<br>
+              Total modules: ${gameState.trainingData.modules.length}<br>
+              All Location_IDs in data: ${gameState.trainingData.modules.map(m => m.Location_ID).join(', ')}<br>
+              <br>
+              <strong>Please check your Google Sheet "Modules" tab:</strong><br>
+              - Make sure Location_ID column matches: "${location.id}"<br>
+              - Make sure Status column is "active"
+            </div>
+          `;
         }
       } else {
         body.innerHTML = '<p>Loading training data...</p>';
@@ -741,7 +794,10 @@
       if (!gameState.trainingData || !gameState.trainingData.lessons) return false;
 
       const moduleLessons = gameState.trainingData.lessons.filter(
-        lesson => lesson.Module_ID === moduleId && lesson.Status === 'active'
+        lesson => {
+          const lessonStatus = String(lesson.Status || '').toLowerCase().trim();
+          return lesson.Module_ID === moduleId && (lessonStatus === 'active' || lessonStatus === '');
+        }
       );
 
       if (moduleLessons.length === 0) return false;
@@ -768,10 +824,13 @@
       title.textContent = `${module.Icon || '📚'} ${module.Title}`;
       description.textContent = module.Description || 'Complete the lessons below';
 
-      // Get lessons for this module
-      const moduleLessons = gameState.trainingData.lessons.filter(
-        lesson => lesson.Module_ID === moduleId && lesson.Status === 'active'
-      );
+      // Get lessons for this module - case-insensitive status
+      const moduleLessons = gameState.trainingData.lessons.filter(lesson => {
+        const lessonStatus = String(lesson.Status || '').toLowerCase().trim();
+        return lesson.Module_ID === moduleId && (lessonStatus === 'active' || lessonStatus === '');
+      });
+
+      console.log('Lessons for module', moduleId, ':', moduleLessons);
 
       if (moduleLessons.length > 0) {
         // Sort by Lesson_Number
@@ -900,9 +959,12 @@
         // Check if all modules in this location are complete
         const location = gameState.questLocations.find(l => l.id === locationId);
         if (location && !gameState.progress.completedLocations.includes(locationId)) {
-          const locationModules = gameState.trainingData.modules.filter(
-            m => m.Location_ID === locationId && m.Status === 'active'
-          );
+          const locationModules = gameState.trainingData.modules.filter(m => {
+            const moduleLocId = String(m.Location_ID || '').trim().toLowerCase();
+            const targetLocId = String(locationId).trim().toLowerCase();
+            const moduleStatus = String(m.Status || '').toLowerCase().trim();
+            return moduleLocId === targetLocId && (moduleStatus === 'active' || moduleStatus === '');
+          });
 
           const allModulesComplete = locationModules.every(module => isModuleCompleted(module.Module_ID));
 
