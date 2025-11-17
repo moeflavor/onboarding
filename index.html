@@ -187,13 +187,33 @@
       justify-content: center;
     }
 
+    .quest-marker::before {
+      content: '';
+      position: absolute;
+      width: 60px;
+      height: 60px;
+      background: #F5008B;
+      border: 3px solid #000;
+      border-radius: 50%;
+      z-index: -1;
+      transition: transform 0.3s;
+    }
+
+    .quest-marker:hover::before {
+      transform: scale(1.2);
+    }
+
     .quest-marker:hover {
       transform: scale(1.3) translateY(-5px);
       filter: drop-shadow(0 8px 16px rgba(245, 0, 139, 0.6));
     }
 
+    .quest-marker.locked::before {
+      background: #666;
+    }
+
     .quest-marker.locked {
-      opacity: 0.3;
+      opacity: 0.4;
       cursor: not-allowed;
       filter: grayscale(100%);
     }
@@ -203,15 +223,20 @@
       filter: grayscale(100%);
     }
 
+    .quest-marker.locked:hover::before {
+      transform: scale(1.1);
+    }
+
     .quest-marker-icon {
-      font-size: 52px;
-      filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.8));
+      font-size: 38px;
+      filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.5));
       animation: bounce 2s ease-in-out infinite;
       transition: font-size 0.3s;
+      z-index: 1;
     }
 
     .quest-marker:hover .quest-marker-icon {
-      font-size: 58px;
+      font-size: 42px;
       animation: none;
     }
 
@@ -489,12 +514,11 @@
         completedLessons: {}
       },
       questLocations: [
-        { id: 'castle', name: 'Castle', x: 50, y: 25, icon: '🏰', unlocked: true },
-        { id: 'toolshop', name: 'Tool Shop', x: 25, y: 40, icon: '🔧', unlocked: false },
-        { id: 'forge', name: 'Forge', x: 75, y: 40, icon: '⚒️', unlocked: false },
-        { id: 'workshop', name: 'Workshop', x: 35, y: 60, icon: '🛠️', unlocked: false },
-        { id: 'market', name: 'Market', x: 65, y: 60, icon: '🏪', unlocked: false },
-        { id: 'service', name: 'Service Hall', x: 50, y: 75, icon: '🏛️', unlocked: false }
+        { id: 'castle', name: 'Castle', x: 20, y: 40, icon: '🏰', unlocked: true },
+        { id: 'forge', name: 'Forge', x: 85, y: 30, icon: '⚒️', unlocked: false },
+        { id: 'service', name: 'Service Hall', x: 75, y: 48, icon: '🍺', unlocked: false },
+        { id: 'workshop', name: 'Workshop', x: 55, y: 65, icon: '🧙🏼‍♂️', unlocked: false },
+        { id: 'market', name: 'Market', x: 78, y: 73, icon: '🧺', unlocked: false }
       ],
       trainingData: null
     };
