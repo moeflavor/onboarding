@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef } from 'react';
 
 interface Position {
   x: number;
@@ -15,7 +15,7 @@ export default function PixelParkLanding({ onEnterPortal }: PixelParkLandingProp
   const [isWalking, setIsWalking] = useState(false);
   const [showPrompt, setShowPrompt] = useState(false);
   const keysPressed = useRef<Set<string>>(new Set());
-  const animationFrameRef = useRef<number>();
+  const animationFrameRef = useRef<number>(0);
 
   // Define collision boundaries (obstacles in the scene)
   const obstacles = [

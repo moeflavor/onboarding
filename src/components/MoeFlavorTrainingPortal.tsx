@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { CheckCircle, Lock, PlayCircle, Award } from 'lucide-react';
 import PixelParkLanding from './PixelParkLanding';
 import LessonViewer from './LessonViewer';
