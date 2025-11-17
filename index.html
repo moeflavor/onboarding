@@ -12,7 +12,7 @@
     }
 
     body {
-      font-family: 'Courier New', monospace;
+      font-family: sans-serif;
       background: #000;
       color: #fff;
       margin: 0;
@@ -213,14 +213,11 @@
     }
 
     .quest-marker.locked {
-      opacity: 0.4;
       cursor: not-allowed;
-      filter: grayscale(100%);
     }
 
     .quest-marker.locked:hover {
       transform: scale(1.1);
-      filter: grayscale(100%);
     }
 
     .quest-marker.locked:hover::before {
@@ -408,7 +405,7 @@
       padding: 14px 28px;
       border-radius: 10px;
       cursor: pointer;
-      font-family: 'Courier New', monospace;
+      font-family: sans-serif;
       font-weight: bold;
       font-size: 1em;
       transition: all 0.3s;
@@ -515,8 +512,8 @@
       },
       questLocations: [
         { id: 'castle', name: 'Castle', x: 20, y: 40, icon: '🏰', unlocked: true },
-        { id: 'forge', name: 'Forge', x: 85, y: 30, icon: '⚒️', unlocked: false },
-        { id: 'service', name: 'Service Hall', x: 75, y: 48, icon: '🍺', unlocked: false },
+        { id: 'forge', name: 'Forge', x: 85, y: 33, icon: '⚒️', unlocked: false },
+        { id: 'service', name: 'Service Hall', x: 75, y: 51, icon: '🍺', unlocked: false },
         { id: 'workshop', name: 'Workshop', x: 55, y: 65, icon: '🧙🏼‍♂️', unlocked: false },
         { id: 'market', name: 'Market', x: 78, y: 73, icon: '🧺', unlocked: false }
       ],
@@ -658,29 +655,37 @@
       title.textContent = location.name;
       description.textContent = `Welcome to the ${location.name}! Complete the training modules to gain experience.`;
 
-      // Generate lesson content
+      // Generate lesson content - map each location to its corresponding module
       if (gameState.trainingData && gameState.trainingData.phases) {
-        const phase = gameState.trainingData.phases[0];
-        if (phase && phase.modules && phase.modules.length > 0) {
-          const module = phase.modules[0];
+        let allLessons = [];
 
-          let html = '<div class="lessonList">';
-          if (module.lessons) {
-            module.lessons.forEach((lesson, index) => {
-              const lessonKey = `${location.id}_${index}`;
-              const completed = gameState.progress.completedLessons[lessonKey] || false;
-              const statusClass = completed ? 'completed' : '';
-
-              html += `
-                <div class="lessonItem ${statusClass}" onclick="viewLesson('${lessonKey}', ${index})">
-                  <strong>${completed ? '✅' : '📖'} ${lesson.title || 'Lesson ' + (index + 1)}</strong>
-                  <p style="font-size: 0.9em; margin-top: 5px; color: #aaa;">
-                    ${completed ? 'Completed!' : 'Click to start'}
-                  </p>
-                </div>
-              `;
+        // Collect all lessons from all phases and modules
+        gameState.trainingData.phases.forEach(phase => {
+          if (phase.modules) {
+            phase.modules.forEach(module => {
+              if (module.lessons) {
+                allLessons = allLessons.concat(module.lessons);
+              }
             });
           }
+        });
+
+        if (allLessons.length > 0) {
+          let html = '<div class="lessonList">';
+          allLessons.forEach((lesson, index) => {
+            const lessonKey = `${location.id}_${index}`;
+            const completed = gameState.progress.completedLessons[lessonKey] || false;
+            const statusClass = completed ? 'completed' : '';
+
+            html += `
+              <div class="lessonItem ${statusClass}" onclick="viewLesson('${lessonKey}', ${index}, '${location.id}')">
+                <strong>${completed ? '✅' : '📖'} ${lesson.title || 'Lesson ' + (index + 1)}</strong>
+                <p style="font-size: 0.9em; margin-top: 5px; color: #aaa;">
+                  ${completed ? 'Completed!' : 'Click to start'}
+                </p>
+              </div>
+            `;
+          });
           html += '</div>';
           body.innerHTML = html;
         } else {
@@ -694,13 +699,27 @@
     }
 
     // View lesson
-    window.viewLesson = function(lessonKey, lessonIndex) {
-      if (!gameState.trainingData?.phases?.[0]?.modules?.[0]?.lessons?.[lessonIndex]) {
+    window.viewLesson = function(lessonKey, lessonIndex, locationId) {
+      // Collect all lessons from all phases and modules
+      let allLessons = [];
+      if (gameState.trainingData && gameState.trainingData.phases) {
+        gameState.trainingData.phases.forEach(phase => {
+          if (phase.modules) {
+            phase.modules.forEach(module => {
+              if (module.lessons) {
+                allLessons = allLessons.concat(module.lessons);
+              }
+            });
+          }
+        });
+      }
+
+      if (!allLessons[lessonIndex]) {
         alert('Lesson content not available');
         return;
       }
 
-      const lesson = gameState.trainingData.phases[0].modules[0].lessons[lessonIndex];
+      const lesson = allLessons[lessonIndex];
       const body = document.getElementById('modalBody');
 
       body.innerHTML = `
@@ -709,7 +728,7 @@
           <p style="line-height: 1.8; color: #ccc;">${lesson.content || 'Lesson content coming soon...'}</p>
           <div class="btnGroup" style="margin-top: 20px;">
             <button class="btn" onclick="completeLesson('${lessonKey}')">Mark as Complete (+100 XP)</button>
-            <button class="btn secondary" onclick="openQuestModal(gameState.questLocations.find(l => l.id === '${lessonKey.split('_')[0]}'))">Back to Lessons</button>
+            <button class="btn secondary" onclick="openQuestModal(gameState.questLocations.find(l => l.id === '${locationId}'))">Back to Lessons</button>
           </div>
         </div>
       `;
