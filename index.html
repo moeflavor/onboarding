@@ -450,6 +450,15 @@
     const ctx = canvas.getContext('2d');
     ctx.imageSmoothingEnabled = false;
 
+    // Load background image
+    const mapBackground = new Image();
+    mapBackground.src = 'map-background.png';
+    let mapLoaded = false;
+    mapBackground.onload = () => {
+      mapLoaded = true;
+      console.log('Map background loaded!');
+    };
+
     // Load saved progress
     function loadProgress() {
       const saved = localStorage.getItem('moeflavor_training_progress');
@@ -542,29 +551,18 @@
 
     // Draw pixel map
     function drawMap() {
-      // Sky gradient
-      const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
-      gradient.addColorStop(0, '#4CC9E5');
-      gradient.addColorStop(0.7, '#7DD9F0');
-      gradient.addColorStop(1, '#4CAF50');
-      ctx.fillStyle = gradient;
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-      // Ground
-      ctx.fillStyle = '#2d5f2e';
-      ctx.fillRect(0, canvas.height * 0.7, canvas.width, canvas.height * 0.3);
-
-      // Simple grass texture
-      ctx.fillStyle = '#3d8b40';
-      for (let i = 0; i < 100; i++) {
-        const x = Math.random() * canvas.width;
-        const y = canvas.height * 0.7 + Math.random() * (canvas.height * 0.3);
-        ctx.fillRect(x, y, 2, 2);
+      if (mapLoaded) {
+        // Draw the background image
+        ctx.drawImage(mapBackground, 0, 0, canvas.width, canvas.height);
+      } else {
+        // Fallback while loading
+        const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
+        gradient.addColorStop(0, '#4CC9E5');
+        gradient.addColorStop(0.7, '#7DD9F0');
+        gradient.addColorStop(1, '#4CAF50');
+        ctx.fillStyle = gradient;
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
       }
-
-      // Path
-      ctx.fillStyle = '#8B7355';
-      ctx.fillRect(canvas.width * 0.4, canvas.height * 0.7, canvas.width * 0.2, canvas.height * 0.3);
     }
 
     // Draw player character
