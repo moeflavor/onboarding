@@ -1,4 +1,4 @@
- <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
@@ -271,71 +271,6 @@
       }
     }
 
-    /* Character sprite */
-    #character {
-      position: absolute;
-      width: 48px;
-      height: 48px;
-      z-index: 40;
-      transition: left 0.1s linear, top 0.1s linear;
-      pointer-events: none;
-      image-rendering: pixelated;
-      image-rendering: -moz-crisp-edges;
-      image-rendering: crisp-edges;
-    }
-
-    .character-sprite {
-      width: 100%;
-      height: 100%;
-      background: linear-gradient(135deg, #F5008B 0%, #F77AAC 100%);
-      border: 2px solid #000;
-      border-radius: 4px;
-      box-shadow:
-        0 0 0 1px #fff inset,
-        0 4px 0 rgba(0, 0, 0, 0.3),
-        0 0 10px rgba(245, 0, 139, 0.4);
-      position: relative;
-    }
-
-    /* Simple pixelated character face */
-    .character-sprite::before {
-      content: '';
-      position: absolute;
-      top: 14px;
-      left: 12px;
-      width: 8px;
-      height: 8px;
-      background: #000;
-      box-shadow: 16px 0 0 #000;
-      border-radius: 2px;
-    }
-
-    .character-sprite::after {
-      content: '';
-      position: absolute;
-      bottom: 10px;
-      left: 50%;
-      transform: translateX(-50%);
-      width: 16px;
-      height: 4px;
-      background: #000;
-      border-radius: 2px;
-    }
-
-    /* Walking animation */
-    #character.walking {
-      animation: walk 0.4s steps(2) infinite;
-    }
-
-    @keyframes walk {
-      0%, 100% {
-        transform: translateY(0);
-      }
-      50% {
-        transform: translateY(-2px);
-      }
-    }
-
     /* Loading screen */
     #loadingScreen {
       position: absolute;
@@ -539,11 +474,6 @@
 
       <!-- Quest location markers -->
       <div id="questMarkers"></div>
-
-      <!-- Character sprite -->
-      <div id="character">
-        <div class="character-sprite"></div>
-      </div>
 
       <div id="loadingScreen">
         <div class="spinner"></div>
@@ -1002,94 +932,11 @@
       document.getElementById('questModal').classList.remove('active');
     };
 
-    // Character movement system
-    const character = {
-      x: 50, // percentage
-      y: 50, // percentage
-      speed: 0.5, // percentage per frame
-      element: null,
-      keys: {
-        ArrowUp: false,
-        ArrowDown: false,
-        ArrowLeft: false,
-        ArrowRight: false
-      }
-    };
-
-    // Initialize character
-    function initCharacter() {
-      character.element = document.getElementById('character');
-      updateCharacterPosition();
-
-      // Keyboard event listeners
-      window.addEventListener('keydown', (e) => {
-        if (e.key in character.keys) {
-          e.preventDefault();
-          character.keys[e.key] = true;
-          character.element.classList.add('walking');
-        }
-      });
-
-      window.addEventListener('keyup', (e) => {
-        if (e.key in character.keys) {
-          e.preventDefault();
-          character.keys[e.key] = false;
-
-          // Stop walking animation if no keys pressed
-          const anyKeyPressed = Object.values(character.keys).some(v => v);
-          if (!anyKeyPressed) {
-            character.element.classList.remove('walking');
-          }
-        }
-      });
-
-      // Start movement loop
-      requestAnimationFrame(updateCharacterMovement);
-    }
-
-    // Update character position
-    function updateCharacterPosition() {
-      if (character.element) {
-        character.element.style.left = `${character.x}%`;
-        character.element.style.top = `${character.y}%`;
-      }
-    }
-
-    // Movement loop
-    function updateCharacterMovement() {
-      let moved = false;
-
-      // Update position based on keys pressed
-      if (character.keys.ArrowUp) {
-        character.y = Math.max(2, character.y - character.speed);
-        moved = true;
-      }
-      if (character.keys.ArrowDown) {
-        character.y = Math.min(98, character.y + character.speed);
-        moved = true;
-      }
-      if (character.keys.ArrowLeft) {
-        character.x = Math.max(2, character.x - character.speed);
-        moved = true;
-      }
-      if (character.keys.ArrowRight) {
-        character.x = Math.min(98, character.x + character.speed);
-        moved = true;
-      }
-
-      if (moved) {
-        updateCharacterPosition();
-      }
-
-      requestAnimationFrame(updateCharacterMovement);
-    }
-
     // Initialize game
     async function init() {
       loadProgress();
       await fetchTrainingData();
       renderQuestMarkers();
-      initCharacter();
       document.getElementById('loadingScreen').classList.add('hidden');
     }
 
