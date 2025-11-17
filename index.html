@@ -208,22 +208,6 @@
       filter: drop-shadow(0 8px 16px rgba(245, 0, 139, 0.6));
     }
 
-    .quest-marker.locked::before {
-      background: #666;
-    }
-
-    .quest-marker.locked {
-      cursor: not-allowed;
-    }
-
-    .quest-marker.locked:hover {
-      transform: scale(1.1);
-    }
-
-    .quest-marker.locked:hover::before {
-      transform: scale(1.1);
-    }
-
     .quest-marker-icon {
       font-size: 38px;
       filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.5));
@@ -326,6 +310,7 @@
       display: flex;
     }
 
+    /* Different modal sizes for different views */
     .modalContent {
       background: linear-gradient(135deg, #1a1a2e 0%, #0f0f1e 100%);
       border: 3px solid #F5008B;
@@ -336,6 +321,13 @@
       overflow-y: auto;
       box-shadow: 0 0 60px rgba(245, 0, 139, 0.6);
       animation: modalAppear 0.3s ease-out;
+      transition: max-width 0.3s, max-height 0.3s;
+    }
+
+    /* Larger modal for lesson content with videos/images */
+    .modalContent.large {
+      max-width: 900px;
+      max-height: 90vh;
     }
 
     @keyframes modalAppear {
@@ -396,6 +388,7 @@
       display: flex;
       gap: 15px;
       margin-top: 25px;
+      flex-wrap: wrap;
     }
 
     .btn {
@@ -444,18 +437,6 @@
     .modalContent::-webkit-scrollbar-thumb:hover {
       background: #F77AAC;
     }
-
-    /* Debug panel */
-    .debug-info {
-      font-size: 0.8em;
-      color: #888;
-      margin-top: 10px;
-      padding: 10px;
-      background: rgba(0,0,0,0.3);
-      border-radius: 5px;
-      max-height: 200px;
-      overflow-y: auto;
-    }
   </style>
 </head>
 <body>
@@ -495,7 +476,7 @@
 
   <!-- Modal for Quest Locations -->
   <div id="questModal" class="modal">
-    <div class="modalContent">
+    <div class="modalContent" id="modalContentElement">
       <h2 id="modalTitle">Quest Location</h2>
       <p id="modalDescription"></p>
       <div id="modalBody"></div>
@@ -524,10 +505,10 @@
       },
       questLocations: [
         { id: 'Castle', name: 'Castle', x: 20, y: 40, icon: '🏰', unlocked: true },
-        { id: 'Forge', name: 'Forge', x: 85, y: 33, icon: '⚒️', unlocked: false },
-        { id: 'ServiceHall', name: 'Service Hall', x: 75, y: 51, icon: '🍺', unlocked: false },
-        { id: 'Workshop', name: 'Workshop', x: 55, y: 65, icon: '🧙🏼‍♂️', unlocked: false },
-        { id: 'Market', name: 'Market', x: 78, y: 73, icon: '🧺', unlocked: false }
+        { id: 'Forge', name: 'Forge', x: 85, y: 33, icon: '⚒️', unlocked: true },
+        { id: 'ServiceHall', name: 'Service Hall', x: 75, y: 51, icon: '🍺', unlocked: true },
+        { id: 'Workshop', name: 'Workshop', x: 55, y: 65, icon: '🧙🏼‍♂️', unlocked: true },
+        { id: 'Market', name: 'Market', x: 78, y: 73, icon: '🧺', unlocked: true }
       ],
       trainingData: null
     };
@@ -539,14 +520,6 @@
         const data = JSON.parse(saved);
         gameState.stats = data.stats || gameState.stats;
         gameState.progress = data.progress || gameState.progress;
-
-        // Unlock locations based on progress
-        gameState.progress.completedLocations.forEach((locId, index) => {
-          const nextIndex = index + 1;
-          if (nextIndex < gameState.questLocations.length) {
-            gameState.questLocations[nextIndex].unlocked = true;
-          }
-        });
       }
       updateStatsDisplay();
       if (document.getElementById('questMarkers')) {
@@ -576,9 +549,6 @@
 
         const data = await response.json();
         console.log('Training data loaded successfully:', data);
-        console.log('Modules:', data.modules);
-        console.log('Lessons:', data.lessons);
-        console.log('Lesson Content:', data.lessonContent);
         
         gameState.trainingData = data;
       } catch (error) {
@@ -672,7 +642,7 @@
 
       gameState.questLocations.forEach(location => {
         const marker = document.createElement('div');
-        marker.className = 'quest-marker' + (location.unlocked ? '' : ' locked');
+        marker.className = 'quest-marker';
         marker.style.left = `${location.x}%`;
         marker.style.top = `${location.y}%`;
         marker.style.transform = 'translate(-50%, -50%)';
@@ -689,15 +659,7 @@
         marker.appendChild(label);
 
         marker.addEventListener('click', () => {
-          if (location.unlocked) {
-            openQuestModal(location);
-          } else {
-            // Subtle locked feedback
-            marker.style.animation = 'shake 0.3s';
-            setTimeout(() => {
-              marker.style.animation = 'bounce 2s ease-in-out infinite';
-            }, 300);
-          }
+          openQuestModal(location);
         });
 
         container.appendChild(marker);
@@ -707,16 +669,16 @@
     // Open quest modal - shows modules for a location
     function openQuestModal(location) {
       const modal = document.getElementById('questModal');
+      const modalContent = document.getElementById('modalContentElement');
       const title = document.getElementById('modalTitle');
       const description = document.getElementById('modalDescription');
       const body = document.getElementById('modalBody');
 
+      // Set normal size for location/module view
+      modalContent.classList.remove('large');
+
       title.textContent = location.name;
       description.textContent = `Welcome to the ${location.name}! Choose a training module to begin.`;
-
-      // Debug info
-      console.log('Opening location:', location.id);
-      console.log('All modules:', gameState.trainingData?.modules);
 
       // Get modules for this location - with case-insensitive matching
       if (gameState.trainingData && gameState.trainingData.modules) {
@@ -725,16 +687,12 @@
           const targetLocId = String(location.id).trim();
           const moduleStatus = String(module.Status || '').toLowerCase().trim();
           
-          console.log(`Comparing module Location_ID: "${moduleLocId}" with "${targetLocId}", Status: "${moduleStatus}"`);
-          
           // Case-insensitive comparison
           const locationMatch = moduleLocId.toLowerCase() === targetLocId.toLowerCase();
           const statusMatch = moduleStatus === 'active' || moduleStatus === '';
           
           return locationMatch && statusMatch;
         });
-
-        console.log('Filtered modules for', location.id, ':', locationModules);
 
         if (locationModules.length > 0) {
           // Sort by Module_Number
@@ -758,29 +716,9 @@
           });
           html += '</div>';
           
-          // Add debug info
-          html += `<div class="debug-info">
-            <strong>Debug Info:</strong><br>
-            Location: ${location.id}<br>
-            Modules found: ${locationModules.length}<br>
-            Total modules in data: ${gameState.trainingData.modules.length}
-          </div>`;
-          
           body.innerHTML = html;
         } else {
-          body.innerHTML = `
-            <p>No training modules available for this location yet.</p>
-            <div class="debug-info">
-              <strong>Debug Info:</strong><br>
-              Looking for Location_ID: "${location.id}"<br>
-              Total modules: ${gameState.trainingData.modules.length}<br>
-              All Location_IDs in data: ${gameState.trainingData.modules.map(m => m.Location_ID).join(', ')}<br>
-              <br>
-              <strong>Please check your Google Sheet "Modules" tab:</strong><br>
-              - Make sure Location_ID column matches: "${location.id}"<br>
-              - Make sure Status column is "active"
-            </div>
-          `;
+          body.innerHTML = '<p>No training modules available for this location yet.</p>';
         }
       } else {
         body.innerHTML = '<p>Loading training data...</p>';
@@ -810,9 +748,13 @@
     // View module - shows lessons in a module
     window.viewModule = function(moduleId, locationId) {
       const modal = document.getElementById('questModal');
+      const modalContent = document.getElementById('modalContentElement');
       const title = document.getElementById('modalTitle');
       const description = document.getElementById('modalDescription');
       const body = document.getElementById('modalBody');
+
+      // Keep normal size for module view (same as location view)
+      modalContent.classList.remove('large');
 
       // Find the module
       const module = gameState.trainingData.modules.find(m => m.Module_ID === moduleId);
@@ -829,8 +771,6 @@
         const lessonStatus = String(lesson.Status || '').toLowerCase().trim();
         return lesson.Module_ID === moduleId && (lessonStatus === 'active' || lessonStatus === '');
       });
-
-      console.log('Lessons for module', moduleId, ':', moduleLessons);
 
       if (moduleLessons.length > 0) {
         // Sort by Lesson_Number
@@ -876,8 +816,12 @@
 
     // View lesson - shows lesson content
     window.viewLesson = function(lessonId, moduleId, locationId) {
+      const modalContent = document.getElementById('modalContentElement');
       const body = document.getElementById('modalBody');
       const title = document.getElementById('modalTitle');
+
+      // Make modal LARGE for lesson content
+      modalContent.classList.add('large');
 
       // Find the lesson
       const lesson = gameState.trainingData.lessons.find(l => l.Lesson_ID === lessonId);
@@ -956,32 +900,6 @@
         gameState.progress.completedLessons[lessonId] = true;
         addXP(100);
 
-        // Check if all modules in this location are complete
-        const location = gameState.questLocations.find(l => l.id === locationId);
-        if (location && !gameState.progress.completedLocations.includes(locationId)) {
-          const locationModules = gameState.trainingData.modules.filter(m => {
-            const moduleLocId = String(m.Location_ID || '').trim().toLowerCase();
-            const targetLocId = String(locationId).trim().toLowerCase();
-            const moduleStatus = String(m.Status || '').toLowerCase().trim();
-            return moduleLocId === targetLocId && (moduleStatus === 'active' || moduleStatus === '');
-          });
-
-          const allModulesComplete = locationModules.every(module => isModuleCompleted(module.Module_ID));
-
-          if (allModulesComplete) {
-            gameState.progress.completedLocations.push(locationId);
-
-            // Unlock next location
-            const currentIndex = gameState.questLocations.findIndex(l => l.id === locationId);
-            if (currentIndex >= 0 && currentIndex < gameState.questLocations.length - 1) {
-              gameState.questLocations[currentIndex + 1].unlocked = true;
-              renderQuestMarkers();
-            }
-
-            alert(`🎉 ${location.name} Complete! Next location unlocked!`);
-          }
-        }
-
         saveProgress();
         // Refresh the module view
         viewModule(moduleId, locationId);
@@ -991,6 +909,7 @@
     // Close modal
     window.closeModal = function() {
       document.getElementById('questModal').classList.remove('active');
+      document.getElementById('modalContentElement').classList.remove('large');
     };
 
     // Initialize game
