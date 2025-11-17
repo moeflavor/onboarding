@@ -13,130 +13,262 @@
 
     body {
       font-family: 'Courier New', monospace;
-      background: #1a1a2e;
+      background: #000;
       color: #fff;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      min-height: 100vh;
-      padding: 20px;
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+      width: 100vw;
+      height: 100vh;
+      cursor: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"><circle cx="12" cy="12" r="10" fill="%23F5008B" stroke="white" stroke-width="2"/></svg>') 12 12, auto;
     }
 
     #gameContainer {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 20px;
-    }
-
-    #header {
-      text-align: center;
-      margin-bottom: 10px;
-    }
-
-    #header h1 {
-      font-size: 2.5em;
-      color: #F5008B;
-      text-shadow: 0 0 10px rgba(245, 0, 139, 0.5);
-      margin-bottom: 10px;
-    }
-
-    #header p {
-      color: #aaa;
-      font-size: 0.9em;
-    }
-
-    #statsBar {
-      background: #0f0f1e;
-      border: 3px solid #F5008B;
-      border-radius: 8px;
-      padding: 15px 30px;
-      display: flex;
-      gap: 40px;
-      align-items: center;
-      box-shadow: 0 0 20px rgba(245, 0, 139, 0.3);
-    }
-
-    .statGroup {
-      display: flex;
-      flex-direction: column;
-      gap: 5px;
-    }
-
-    .statLabel {
-      font-size: 0.8em;
-      color: #aaa;
-      text-transform: uppercase;
-    }
-
-    .statBar {
-      width: 200px;
-      height: 20px;
-      background: #333;
-      border: 2px solid #555;
-      border-radius: 4px;
-      overflow: hidden;
       position: relative;
-    }
-
-    .statFill {
+      width: 100%;
       height: 100%;
-      transition: width 0.3s ease;
-      position: relative;
     }
 
-    .hpBar {
-      background: linear-gradient(90deg, #F5008B, #F77AAC);
-    }
-
-    .xpBar {
-      background: linear-gradient(90deg, #21ef80, #4CAF50);
-    }
-
-    .statText {
+    /* Minimal Corner HUD */
+    #cornerHUD {
       position: absolute;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      font-size: 0.75em;
+      top: 15px;
+      left: 15px;
+      z-index: 100;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .hudItem {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(0, 0, 0, 0.6);
+      padding: 6px 12px;
+      border-radius: 20px;
+      font-size: 0.9em;
       font-weight: bold;
-      text-shadow: 0 0 3px #000;
-      z-index: 1;
+      backdrop-filter: blur(4px);
     }
 
-    #canvasContainer {
-      position: relative;
-      border: 4px solid #F5008B;
-      border-radius: 8px;
-      box-shadow: 0 0 30px rgba(245, 0, 139, 0.4);
-      background: #000;
+    .hudIcon {
+      font-size: 1.2em;
     }
 
-    #gameCanvas {
-      display: block;
+    .hudValue {
+      color: #fff;
+      text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8);
+    }
+
+    .hpValue { color: #F5008B; }
+    .xpValue { color: #21ef80; }
+    .levelValue { color: #FFD700; }
+
+    /* Full-screen map */
+    #mapContainer {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-image: url('map-background.png');
+      background-size: cover;
+      background-position: center;
+      background-repeat: no-repeat;
       image-rendering: pixelated;
-      image-rendering: -moz-crisp-edges;
-      image-rendering: crisp-edges;
     }
 
+    /* Floating clouds */
+    .cloud {
+      position: absolute;
+      background: rgba(255, 255, 255, 0.5);
+      border-radius: 100px;
+      opacity: 0.4;
+      animation: float linear infinite;
+      pointer-events: none;
+    }
+
+    .cloud::before,
+    .cloud::after {
+      content: '';
+      position: absolute;
+      background: rgba(255, 255, 255, 0.5);
+      border-radius: 100px;
+    }
+
+    .cloud1 {
+      width: 100px;
+      height: 40px;
+      top: 20%;
+      left: -100px;
+      animation-duration: 45s;
+    }
+
+    .cloud1::before {
+      width: 50px;
+      height: 50px;
+      top: -25px;
+      left: 10px;
+    }
+
+    .cloud1::after {
+      width: 60px;
+      height: 40px;
+      top: -15px;
+      right: 10px;
+    }
+
+    .cloud2 {
+      width: 120px;
+      height: 50px;
+      top: 40%;
+      left: -120px;
+      animation-duration: 60s;
+      animation-delay: 5s;
+    }
+
+    .cloud2::before {
+      width: 60px;
+      height: 60px;
+      top: -30px;
+      left: 15px;
+    }
+
+    .cloud2::after {
+      width: 70px;
+      height: 50px;
+      top: -20px;
+      right: 15px;
+    }
+
+    .cloud3 {
+      width: 80px;
+      height: 35px;
+      top: 60%;
+      left: -80px;
+      animation-duration: 50s;
+      animation-delay: 10s;
+    }
+
+    .cloud3::before {
+      width: 40px;
+      height: 40px;
+      top: -20px;
+      left: 10px;
+    }
+
+    .cloud3::after {
+      width: 50px;
+      height: 35px;
+      top: -15px;
+      right: 10px;
+    }
+
+    @keyframes float {
+      from {
+        transform: translateX(0);
+      }
+      to {
+        transform: translateX(calc(100vw + 200px));
+      }
+    }
+
+    /* Quest markers - clean and minimal */
+    .quest-marker {
+      position: absolute;
+      width: 60px;
+      height: 60px;
+      cursor: pointer;
+      transition: transform 0.3s, filter 0.3s;
+      z-index: 50;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .quest-marker:hover {
+      transform: scale(1.3) translateY(-5px);
+      filter: drop-shadow(0 8px 16px rgba(245, 0, 139, 0.6));
+    }
+
+    .quest-marker.locked {
+      opacity: 0.3;
+      cursor: not-allowed;
+      filter: grayscale(100%);
+    }
+
+    .quest-marker.locked:hover {
+      transform: scale(1.1);
+      filter: grayscale(100%);
+    }
+
+    .quest-marker-icon {
+      font-size: 52px;
+      filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.8));
+      animation: bounce 2s ease-in-out infinite;
+      transition: font-size 0.3s;
+    }
+
+    .quest-marker:hover .quest-marker-icon {
+      font-size: 58px;
+      animation: none;
+    }
+
+    /* Tooltip only on hover */
+    .quest-marker-label {
+      position: absolute;
+      bottom: -35px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(0, 0, 0, 0.9);
+      color: white;
+      padding: 6px 14px;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: bold;
+      white-space: nowrap;
+      pointer-events: none;
+      box-shadow: 0 3px 10px rgba(0, 0, 0, 0.5);
+      opacity: 0;
+      transition: opacity 0.3s, bottom 0.3s;
+      border: 1px solid rgba(245, 0, 139, 0.5);
+    }
+
+    .quest-marker:hover .quest-marker-label {
+      opacity: 1;
+      bottom: -40px;
+    }
+
+    @keyframes bounce {
+      0%, 100% {
+        transform: translateY(0);
+      }
+      50% {
+        transform: translateY(-8px);
+      }
+    }
+
+    /* Loading screen */
     #loadingScreen {
       position: absolute;
       top: 0;
       left: 0;
       right: 0;
       bottom: 0;
-      background: rgba(0, 0, 0, 0.9);
+      background: rgba(0, 0, 0, 0.95);
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
       gap: 20px;
       z-index: 1000;
+      transition: opacity 0.5s;
     }
 
     #loadingScreen.hidden {
-      display: none;
+      opacity: 0;
+      pointer-events: none;
     }
 
     .spinner {
@@ -153,6 +285,7 @@
       100% { transform: rotate(360deg); }
     }
 
+    /* Modal styling */
     .modal {
       display: none;
       position: fixed;
@@ -160,10 +293,11 @@
       left: 0;
       right: 0;
       bottom: 0;
-      background: rgba(0, 0, 0, 0.8);
+      background: rgba(0, 0, 0, 0.85);
       z-index: 2000;
       align-items: center;
       justify-content: center;
+      backdrop-filter: blur(8px);
     }
 
     .modal.active {
@@ -171,24 +305,37 @@
     }
 
     .modalContent {
-      background: #0f0f1e;
+      background: linear-gradient(135deg, #1a1a2e 0%, #0f0f1e 100%);
       border: 3px solid #F5008B;
-      border-radius: 12px;
-      padding: 30px;
+      border-radius: 16px;
+      padding: 35px;
       max-width: 600px;
       max-height: 80vh;
       overflow-y: auto;
-      box-shadow: 0 0 40px rgba(245, 0, 139, 0.5);
+      box-shadow: 0 0 60px rgba(245, 0, 139, 0.6);
+      animation: modalAppear 0.3s ease-out;
+    }
+
+    @keyframes modalAppear {
+      from {
+        opacity: 0;
+        transform: scale(0.9);
+      }
+      to {
+        opacity: 1;
+        transform: scale(1);
+      }
     }
 
     .modalContent h2 {
       color: #F5008B;
       margin-bottom: 20px;
-      font-size: 1.8em;
+      font-size: 2em;
+      text-shadow: 0 0 10px rgba(245, 0, 139, 0.5);
     }
 
     .modalContent p {
-      line-height: 1.6;
+      line-height: 1.8;
       margin-bottom: 15px;
       color: #ccc;
     }
@@ -200,9 +347,9 @@
     .lessonItem {
       background: #1a1a2e;
       border: 2px solid #333;
-      border-radius: 8px;
-      padding: 15px;
-      margin-bottom: 10px;
+      border-radius: 12px;
+      padding: 18px;
+      margin-bottom: 12px;
       cursor: pointer;
       transition: all 0.3s;
     }
@@ -210,6 +357,7 @@
     .lessonItem:hover {
       border-color: #F5008B;
       background: #252538;
+      transform: translateX(5px);
     }
 
     .lessonItem.completed {
@@ -225,26 +373,26 @@
     .btnGroup {
       display: flex;
       gap: 15px;
-      margin-top: 20px;
+      margin-top: 25px;
     }
 
     .btn {
       background: linear-gradient(45deg, #F5008B, #F77AAC);
       color: white;
       border: none;
-      padding: 12px 24px;
-      border-radius: 8px;
+      padding: 14px 28px;
+      border-radius: 10px;
       cursor: pointer;
       font-family: 'Courier New', monospace;
       font-weight: bold;
       font-size: 1em;
       transition: all 0.3s;
-      box-shadow: 0 4px 0 #000, 0 0 15px rgba(245, 0, 139, 0.5);
+      box-shadow: 0 4px 0 #000, 0 0 20px rgba(245, 0, 139, 0.5);
     }
 
     .btn:hover {
       transform: translateY(2px);
-      box-shadow: 0 2px 0 #000, 0 0 25px rgba(245, 0, 139, 0.8);
+      box-shadow: 0 2px 0 #000, 0 0 30px rgba(245, 0, 139, 0.8);
     }
 
     .btn:active {
@@ -256,139 +404,58 @@
       background: linear-gradient(45deg, #333, #555);
     }
 
-    .quizQuestion {
-      background: #1a1a2e;
-      border: 2px solid #F5008B;
-      border-radius: 8px;
-      padding: 20px;
-      margin-bottom: 20px;
+    /* Scrollbar styling for modal */
+    .modalContent::-webkit-scrollbar {
+      width: 8px;
     }
 
-    .quizOptions {
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-      margin-top: 15px;
-    }
-
-    .quizOption {
-      background: #252538;
-      border: 2px solid #333;
-      border-radius: 6px;
-      padding: 12px;
-      cursor: pointer;
-      transition: all 0.3s;
-    }
-
-    .quizOption:hover {
-      border-color: #F5008B;
-      background: #2a2a40;
-    }
-
-    .quizOption.selected {
-      border-color: #F5008B;
-      background: #2a2a40;
-    }
-
-    .quizOption.correct {
-      border-color: #21ef80;
-      background: rgba(33, 239, 128, 0.2);
-    }
-
-    .quizOption.incorrect {
-      border-color: #ff4444;
-      background: rgba(255, 68, 68, 0.2);
-    }
-
-    #instructions {
+    .modalContent::-webkit-scrollbar-track {
       background: #0f0f1e;
-      border: 2px solid #333;
-      border-radius: 8px;
-      padding: 15px;
-      margin-top: 10px;
-      text-align: center;
-      max-width: 800px;
+      border-radius: 10px;
     }
 
-    #instructions p {
-      color: #aaa;
-      font-size: 0.9em;
+    .modalContent::-webkit-scrollbar-thumb {
+      background: #F5008B;
+      border-radius: 10px;
     }
 
-    .locationMarker {
-      position: absolute;
-      cursor: pointer;
-      transition: transform 0.2s;
-      z-index: 100;
-    }
-
-    .locationMarker:hover {
-      transform: scale(1.2);
-    }
-
-    .locationMarker.locked {
-      opacity: 0.4;
-      cursor: not-allowed;
-    }
-
-    .locationIcon {
-      font-size: 32px;
-      filter: drop-shadow(0 0 5px rgba(0, 0, 0, 0.8));
-    }
-
-    .locationLabel {
-      position: absolute;
-      bottom: -20px;
-      left: 50%;
-      transform: translateX(-50%);
-      font-size: 10px;
-      white-space: nowrap;
-      background: rgba(0, 0, 0, 0.8);
-      padding: 2px 6px;
-      border-radius: 4px;
+    .modalContent::-webkit-scrollbar-thumb:hover {
+      background: #F77AAC;
     }
   </style>
 </head>
 <body>
   <div id="gameContainer">
-    <div id="header">
-      <h1>🌸 MoeFlavor Training Portal 🌸</h1>
-      <p>Navigate your pixel adventure and complete quests to level up!</p>
-    </div>
-
-    <div id="statsBar">
-      <div class="statGroup">
-        <div class="statLabel">Health Points</div>
-        <div class="statBar">
-          <div class="statFill hpBar" id="hpFill" style="width: 100%">
-            <div class="statText" id="hpText">100 / 100</div>
-          </div>
-        </div>
+    <!-- Minimal Corner HUD -->
+    <div id="cornerHUD">
+      <div class="hudItem">
+        <span class="hudIcon">💖</span>
+        <span class="hudValue hpValue" id="hpText">100</span>
       </div>
-      <div class="statGroup">
-        <div class="statLabel">Experience</div>
-        <div class="statBar">
-          <div class="statFill xpBar" id="xpFill" style="width: 0%">
-            <div class="statText" id="xpText">0 / 600</div>
-          </div>
-        </div>
+      <div class="hudItem">
+        <span class="hudIcon">⚡</span>
+        <span class="hudValue xpValue" id="xpText">0/600</span>
       </div>
-      <div class="statGroup">
-        <div class="statLabel">Level</div>
-        <div style="font-size: 1.5em; color: #21ef80; text-align: center;" id="levelText">1</div>
+      <div class="hudItem">
+        <span class="hudIcon">⭐</span>
+        <span class="hudValue levelValue" id="levelText">1</span>
       </div>
     </div>
 
-    <div id="canvasContainer">
-      <canvas id="gameCanvas" width="800" height="600"></canvas>
+    <!-- Full-screen map -->
+    <div id="mapContainer">
+      <!-- Floating clouds -->
+      <div class="cloud cloud1"></div>
+      <div class="cloud cloud2"></div>
+      <div class="cloud cloud3"></div>
+
+      <!-- Quest location markers -->
+      <div id="questMarkers"></div>
+
       <div id="loadingScreen">
         <div class="spinner"></div>
-        <p>Loading Training Portal...</p>
+        <p>Loading...</p>
       </div>
-    </div>
-
-    <div id="instructions">
-      <p>🎮 Use <strong>WASD</strong> or <strong>Arrow Keys</strong> to move • Click on quest locations to start training</p>
     </div>
   </div>
 
@@ -407,19 +474,9 @@
   <script>
     // Configuration
     const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzz_zl42rXJXpwoEE-M5RyRw5lQoIDfWahRV1zbuSv8xL-ZdGyqxV4EGc0lG4nRcr9z/exec';
-    const TILE_SIZE = 32;
-    const MAP_WIDTH = 25;
-    const MAP_HEIGHT = 19;
 
     // Game State
     let gameState = {
-      player: {
-        x: 400,
-        y: 300,
-        speed: 3,
-        direction: 'down',
-        isWalking: false
-      },
       stats: {
         hp: 100,
         maxHp: 100,
@@ -432,31 +489,14 @@
         completedLessons: {}
       },
       questLocations: [
-        { id: 'castle', name: '🏰 Castle', x: 400, y: 150, icon: '🏰', unlocked: true },
-        { id: 'toolshop', name: '🔧 Tool Shop', x: 200, y: 250, icon: '🔧', unlocked: false },
-        { id: 'forge', name: '⚒️ Forge', x: 600, y: 250, icon: '⚒️', unlocked: false },
-        { id: 'workshop', name: '🛠️ Workshop', x: 300, y: 400, icon: '🛠️', unlocked: false },
-        { id: 'market', name: '🏪 Market', x: 500, y: 400, icon: '🏪', unlocked: false },
-        { id: 'service', name: '🏛️ Service Hall', x: 400, y: 500, icon: '🏛️', unlocked: false }
+        { id: 'castle', name: 'Castle', x: 50, y: 25, icon: '🏰', unlocked: true },
+        { id: 'toolshop', name: 'Tool Shop', x: 25, y: 40, icon: '🔧', unlocked: false },
+        { id: 'forge', name: 'Forge', x: 75, y: 40, icon: '⚒️', unlocked: false },
+        { id: 'workshop', name: 'Workshop', x: 35, y: 60, icon: '🛠️', unlocked: false },
+        { id: 'market', name: 'Market', x: 65, y: 60, icon: '🏪', unlocked: false },
+        { id: 'service', name: 'Service Hall', x: 50, y: 75, icon: '🏛️', unlocked: false }
       ],
       trainingData: null
-    };
-
-    // Keyboard state
-    const keys = {};
-
-    // Canvas setup
-    const canvas = document.getElementById('gameCanvas');
-    const ctx = canvas.getContext('2d');
-    ctx.imageSmoothingEnabled = false;
-
-    // Load background image
-    const mapBackground = new Image();
-    mapBackground.src = 'map-background.png';
-    let mapLoaded = false;
-    mapBackground.onload = () => {
-      mapLoaded = true;
-      console.log('Map background loaded!');
     };
 
     // Load saved progress
@@ -476,6 +516,9 @@
         });
       }
       updateStatsDisplay();
+      if (document.getElementById('questMarkers')) {
+        renderQuestMarkers();
+      }
     }
 
     // Save progress
@@ -522,17 +565,10 @@
       }
     }
 
-    // Update stats display
+    // Update stats display - minimal corner HUD
     function updateStatsDisplay() {
-      const hpPercent = (gameState.stats.hp / gameState.stats.maxHp) * 100;
-      const xpPercent = (gameState.stats.xp / gameState.stats.maxXp) * 100;
-
-      document.getElementById('hpFill').style.width = `${hpPercent}%`;
-      document.getElementById('hpText').textContent = `${gameState.stats.hp} / ${gameState.stats.maxHp}`;
-
-      document.getElementById('xpFill').style.width = `${xpPercent}%`;
-      document.getElementById('xpText').textContent = `${gameState.stats.xp} / ${gameState.stats.maxXp}`;
-
+      document.getElementById('hpText').textContent = gameState.stats.hp;
+      document.getElementById('xpText').textContent = `${gameState.stats.xp}/${gameState.stats.maxXp}`;
       document.getElementById('levelText').textContent = gameState.stats.level;
     }
 
@@ -549,184 +585,44 @@
       saveProgress();
     }
 
-    // Draw pixel map
-    function drawMap() {
-      if (mapLoaded) {
-        // Draw the background image
-        ctx.drawImage(mapBackground, 0, 0, canvas.width, canvas.height);
-      } else {
-        // Fallback while loading
-        const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
-        gradient.addColorStop(0, '#4CC9E5');
-        gradient.addColorStop(0.7, '#7DD9F0');
-        gradient.addColorStop(1, '#4CAF50');
-        ctx.fillStyle = gradient;
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
-      }
-    }
-
-    // Draw player character
-    function drawPlayer() {
-      const px = gameState.player.x;
-      const py = gameState.player.y;
-
-      // Shadow
-      ctx.fillStyle = 'rgba(0, 0, 0, 0.3)';
-      ctx.beginPath();
-      ctx.ellipse(px, py + 20, 8, 4, 0, 0, Math.PI * 2);
-      ctx.fill();
-
-      // Head
-      ctx.fillStyle = '#FFD1B3';
-      ctx.fillRect(px - 8, py - 16, 16, 16);
-      ctx.strokeStyle = '#000';
-      ctx.lineWidth = 2;
-      ctx.strokeRect(px - 8, py - 16, 16, 16);
-
-      // Eyes
-      ctx.fillStyle = '#000';
-      if (gameState.player.direction === 'left') {
-        ctx.fillRect(px - 6, py - 10, 3, 3);
-      } else if (gameState.player.direction === 'right') {
-        ctx.fillRect(px + 3, py - 10, 3, 3);
-      } else {
-        ctx.fillRect(px - 6, py - 10, 3, 3);
-        ctx.fillRect(px + 3, py - 10, 3, 3);
-      }
-
-      // Body
-      ctx.fillStyle = '#F5008B';
-      ctx.fillRect(px - 8, py, 16, 12);
-      ctx.strokeRect(px - 8, py, 16, 12);
-
-      // Legs
-      const legOffset = gameState.player.isWalking ? 1 : 0;
-      ctx.fillStyle = '#333';
-      ctx.fillRect(px - 7, py + 12, 6, 10);
-      ctx.strokeRect(px - 7, py + 12, 6, 10);
-      ctx.fillRect(px + 1, py + 12, 6, 10);
-      ctx.strokeRect(px + 1, py + 12, 6, 10);
-    }
-
-    // Draw quest location markers
-    function drawQuestLocations() {
-      gameState.questLocations.forEach(location => {
-        ctx.save();
-
-        if (!location.unlocked) {
-          ctx.globalAlpha = 0.4;
-        }
-
-        // Draw icon background
-        ctx.fillStyle = location.unlocked ? '#F5008B' : '#666';
-        ctx.beginPath();
-        ctx.arc(location.x, location.y, 25, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.strokeStyle = '#000';
-        ctx.lineWidth = 3;
-        ctx.stroke();
-
-        // Draw icon
-        ctx.font = 'bold 32px Arial';
-        ctx.textAlign = 'center';
-        ctx.textBaseline = 'middle';
-        ctx.fillStyle = '#fff';
-        ctx.fillText(location.icon, location.x, location.y);
-
-        // Draw label
-        ctx.font = 'bold 12px Courier New';
-        ctx.fillStyle = '#000';
-        ctx.fillRect(location.x - 40, location.y + 35, 80, 18);
-        ctx.fillStyle = '#fff';
-        ctx.fillText(location.name, location.x, location.y + 44);
-
-        ctx.restore();
-      });
-    }
-
-    // Update player movement
-    function updatePlayer() {
-      let moved = false;
-      let newX = gameState.player.x;
-      let newY = gameState.player.y;
-
-      if (keys['ArrowUp'] || keys['w']) {
-        newY -= gameState.player.speed;
-        gameState.player.direction = 'up';
-        moved = true;
-      }
-      if (keys['ArrowDown'] || keys['s']) {
-        newY += gameState.player.speed;
-        gameState.player.direction = 'down';
-        moved = true;
-      }
-      if (keys['ArrowLeft'] || keys['a']) {
-        newX -= gameState.player.speed;
-        gameState.player.direction = 'left';
-        moved = true;
-      }
-      if (keys['ArrowRight'] || keys['d']) {
-        newX += gameState.player.speed;
-        gameState.player.direction = 'right';
-        moved = true;
-      }
-
-      // Boundary checks
-      if (newX >= 20 && newX <= canvas.width - 20) {
-        gameState.player.x = newX;
-      }
-      if (newY >= 20 && newY <= canvas.height - 20) {
-        gameState.player.y = newY;
-      }
-
-      gameState.player.isWalking = moved;
-    }
-
-    // Game loop
-    function gameLoop() {
-      updatePlayer();
-
-      // Clear and redraw
-      drawMap();
-      drawQuestLocations();
-      drawPlayer();
-
-      requestAnimationFrame(gameLoop);
-    }
-
-    // Handle keyboard input
-    window.addEventListener('keydown', (e) => {
-      if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'w', 'a', 's', 'd'].includes(e.key)) {
-        e.preventDefault();
-        keys[e.key] = true;
-      }
-    });
-
-    window.addEventListener('keyup', (e) => {
-      keys[e.key] = false;
-    });
-
-    // Handle canvas clicks for quest locations
-    canvas.addEventListener('click', (e) => {
-      const rect = canvas.getBoundingClientRect();
-      const clickX = e.clientX - rect.left;
-      const clickY = e.clientY - rect.top;
+    // Render quest markers on the map
+    function renderQuestMarkers() {
+      const container = document.getElementById('questMarkers');
+      container.innerHTML = '';
 
       gameState.questLocations.forEach(location => {
-        const dist = Math.sqrt(
-          Math.pow(clickX - location.x, 2) +
-          Math.pow(clickY - location.y, 2)
-        );
+        const marker = document.createElement('div');
+        marker.className = 'quest-marker' + (location.unlocked ? '' : ' locked');
+        marker.style.left = `${location.x}%`;
+        marker.style.top = `${location.y}%`;
+        marker.style.transform = 'translate(-50%, -50%)';
 
-        if (dist < 30) {
+        const icon = document.createElement('div');
+        icon.className = 'quest-marker-icon';
+        icon.textContent = location.icon;
+
+        const label = document.createElement('div');
+        label.className = 'quest-marker-label';
+        label.textContent = location.name;
+
+        marker.appendChild(icon);
+        marker.appendChild(label);
+
+        marker.addEventListener('click', () => {
           if (location.unlocked) {
             openQuestModal(location);
           } else {
-            alert('🔒 This location is locked! Complete previous quests to unlock.');
+            // Subtle locked feedback
+            marker.style.animation = 'shake 0.3s';
+            setTimeout(() => {
+              marker.style.animation = 'bounce 2s ease-in-out infinite';
+            }, 300);
           }
-        }
+        });
+
+        container.appendChild(marker);
       });
-    });
+    }
 
     // Open quest modal
     function openQuestModal(location) {
@@ -784,7 +680,7 @@
       const body = document.getElementById('modalBody');
 
       body.innerHTML = `
-        <div style="background: #1a1a2e; padding: 20px; border-radius: 8px; border: 2px solid #F5008B;">
+        <div style="background: #1a1a2e; padding: 20px; border-radius: 12px; border: 2px solid #F5008B;">
           <h3 style="color: #F5008B; margin-bottom: 15px;">${lesson.title}</h3>
           <p style="line-height: 1.8; color: #ccc;">${lesson.content || 'Lesson content coming soon...'}</p>
           <div class="btnGroup" style="margin-top: 20px;">
@@ -817,6 +713,7 @@
             const currentIndex = gameState.questLocations.findIndex(l => l.id === locationId);
             if (currentIndex >= 0 && currentIndex < gameState.questLocations.length - 1) {
               gameState.questLocations[currentIndex + 1].unlocked = true;
+              renderQuestMarkers(); // Re-render to show unlocked state
             }
 
             alert(`🎉 ${location.name} Complete! Next location unlocked!`);
@@ -837,12 +734,23 @@
     async function init() {
       loadProgress();
       await fetchTrainingData();
+      renderQuestMarkers();
       document.getElementById('loadingScreen').classList.add('hidden');
-      gameLoop();
     }
 
     // Start game when page loads
     window.addEventListener('load', init);
+
+    // Add shake animation dynamically
+    const style = document.createElement('style');
+    style.textContent = `
+      @keyframes shake {
+        0%, 100% { transform: translate(-50%, -50%) rotate(0deg); }
+        25% { transform: translate(-50%, -50%) rotate(-5deg); }
+        75% { transform: translate(-50%, -50%) rotate(5deg); }
+      }
+    `;
+    document.head.appendChild(style);
   </script>
 </body>
 </html>
