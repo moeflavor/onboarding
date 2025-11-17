@@ -495,7 +495,7 @@
 
   <script>
     // Configuration
-    const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzz_zl42rXJXpwoEE-M5RyRw5lQoIDfWahRV1zbuSv8xL-ZdGyqxV4EGc0lG4nRcr9z/exec';
+    const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwJOTfofzgR9D4yGQQghS_a2Hc_L9ISdw0TcKO_-9E0_n3FvBgLHC0i6L8rcGrGCe5k/exec';
 
     // Game State
     let gameState = {
@@ -511,11 +511,11 @@
         completedLessons: {}
       },
       questLocations: [
-        { id: 'castle', name: 'Castle', x: 20, y: 40, icon: '🏰', unlocked: true },
-        { id: 'forge', name: 'Forge', x: 85, y: 33, icon: '⚒️', unlocked: false },
-        { id: 'service', name: 'Service Hall', x: 75, y: 51, icon: '🍺', unlocked: false },
-        { id: 'workshop', name: 'Workshop', x: 55, y: 65, icon: '🧙🏼‍♂️', unlocked: false },
-        { id: 'market', name: 'Market', x: 78, y: 73, icon: '🧺', unlocked: false }
+        { id: 'Castle', name: 'Castle', x: 20, y: 40, icon: '🏰', unlocked: true },
+        { id: 'Forge', name: 'Forge', x: 85, y: 33, icon: '⚒️', unlocked: false },
+        { id: 'ServiceHall', name: 'Service Hall', x: 75, y: 51, icon: '🍺', unlocked: false },
+        { id: 'Workshop', name: 'Workshop', x: 55, y: 65, icon: '🧙🏼‍♂️', unlocked: false },
+        { id: 'Market', name: 'Market', x: 78, y: 73, icon: '🧺', unlocked: false }
       ],
       trainingData: null
     };
@@ -554,34 +554,77 @@
     // Fetch training data from Google Sheets
     async function fetchTrainingData() {
       try {
+        console.log('Fetching training data from:', SCRIPT_URL);
         const response = await fetch(SCRIPT_URL);
+        console.log('Response status:', response.status);
+
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
         const data = await response.json();
+        console.log('Training data loaded successfully:', data);
         gameState.trainingData = data;
-        console.log('Training data loaded:', data);
       } catch (error) {
         console.error('Failed to load training data:', error);
+        console.log('Using fallback data');
+        alert('⚠️ Could not connect to Google Sheets. Using demo data. Please check the console for details.');
+
         // Use fallback data if API fails
         gameState.trainingData = {
-          phases: [
+          locations: [
+            { Location_ID: 'Castle', Title: 'The Castle', Icon: '🏰', Description: 'Company Foundation & Culture', Status: 'active' }
+          ],
+          modules: [
             {
-              name: 'Onboarding',
-              modules: [
-                {
-                  name: 'Welcome to MoeFlavor',
-                  lessons: [
-                    { title: 'Introduction', content: 'Welcome to the MoeFlavor family!' }
-                  ],
-                  quiz: [
-                    {
-                      question: 'What is MoeFlavor?',
-                      options: ['A kawaii brand', 'A restaurant', 'A game', 'A book'],
-                      correct: 0
-                    }
-                  ]
-                }
-              ]
+              Module_ID: 'M1',
+              Location_ID: 'Castle',
+              Module_Number: 1,
+              Title: 'Welcome to MoeFlavor',
+              Description: 'Learn about our company and culture',
+              Icon: '📜',
+              Status: 'active'
             }
-          ]
+          ],
+          lessons: [
+            {
+              Lesson_ID: 'L1.1',
+              Module_ID: 'M1',
+              Lesson_Number: 1,
+              Title: 'Welcome to MoeFlavor',
+              Duration: '5 min',
+              Content_Type: 'text',
+              Status: 'active'
+            },
+            {
+              Lesson_ID: 'L1.2',
+              Module_ID: 'M1',
+              Lesson_Number: 2,
+              Title: 'Getting Started',
+              Duration: '10 min',
+              Content_Type: 'text',
+              Status: 'active'
+            }
+          ],
+          lessonContent: [
+            {
+              Lesson_ID: 'L1.1',
+              Text_Content: 'Welcome to the MoeFlavor family! This is demo data.\n\nPlease configure your Google Apps Script to see real training content.\n\nMake sure your Google Sheet has these tabs:\n- LocationSheet\n- Modules\n- Lessons\n- LessonContent\n- Quizzes\n- Team\n- UserProgress',
+              Video_URL: null,
+              Image_URL: null,
+              PDF_URL: null
+            },
+            {
+              Lesson_ID: 'L1.2',
+              Text_Content: 'This is a sample lesson showing how the training portal works.\n\nClick through the modules and lessons to explore the interface.\n\nReplace this with your actual Google Sheets data to see your real content.',
+              Video_URL: null,
+              Image_URL: null,
+              PDF_URL: null
+            }
+          ],
+          quizzes: [],
+          team: [],
+          userProgress: []
         };
       }
     }
@@ -645,7 +688,7 @@
       });
     }
 
-    // Open quest modal
+    // Open quest modal - shows modules for a location
     function openQuestModal(location) {
       const modal = document.getElementById('questModal');
       const title = document.getElementById('modalTitle');
@@ -653,43 +696,38 @@
       const body = document.getElementById('modalBody');
 
       title.textContent = location.name;
-      description.textContent = `Welcome to the ${location.name}! Complete the training modules to gain experience.`;
+      description.textContent = `Welcome to the ${location.name}! Choose a training module to begin.`;
 
-      // Generate lesson content - map each location to its corresponding module
-      if (gameState.trainingData && gameState.trainingData.phases) {
-        let allLessons = [];
+      // Get modules for this location
+      if (gameState.trainingData && gameState.trainingData.modules) {
+        const locationModules = gameState.trainingData.modules.filter(
+          module => module.Location_ID === location.id && module.Status === 'active'
+        );
 
-        // Collect all lessons from all phases and modules
-        gameState.trainingData.phases.forEach(phase => {
-          if (phase.modules) {
-            phase.modules.forEach(module => {
-              if (module.lessons) {
-                allLessons = allLessons.concat(module.lessons);
-              }
-            });
-          }
-        });
+        if (locationModules.length > 0) {
+          // Sort by Module_Number
+          locationModules.sort((a, b) => (a.Module_Number || 0) - (b.Module_Number || 0));
 
-        if (allLessons.length > 0) {
           let html = '<div class="lessonList">';
-          allLessons.forEach((lesson, index) => {
-            const lessonKey = `${location.id}_${index}`;
-            const completed = gameState.progress.completedLessons[lessonKey] || false;
-            const statusClass = completed ? 'completed' : '';
+          locationModules.forEach(module => {
+            // Check if module is completed
+            const moduleCompleted = isModuleCompleted(module.Module_ID);
+            const statusClass = moduleCompleted ? 'completed' : '';
 
             html += `
-              <div class="lessonItem ${statusClass}" onclick="viewLesson('${lessonKey}', ${index}, '${location.id}')">
-                <strong>${completed ? '✅' : '📖'} ${lesson.title || 'Lesson ' + (index + 1)}</strong>
+              <div class="lessonItem ${statusClass}" onclick="viewModule('${module.Module_ID}', '${location.id}')">
+                <strong>${module.Icon || '📚'} ${module.Title}</strong>
                 <p style="font-size: 0.9em; margin-top: 5px; color: #aaa;">
-                  ${completed ? 'Completed!' : 'Click to start'}
+                  ${module.Description || 'Click to view lessons'}
                 </p>
+                ${moduleCompleted ? '<p style="font-size: 0.8em; color: #21ef80; margin-top: 5px;">✅ Completed</p>' : ''}
               </div>
             `;
           });
           html += '</div>';
           body.innerHTML = html;
         } else {
-          body.innerHTML = '<p>No training modules available yet.</p>';
+          body.innerHTML = '<p>No training modules available for this location yet.</p>';
         }
       } else {
         body.innerHTML = '<p>Loading training data...</p>';
@@ -698,65 +736,184 @@
       modal.classList.add('active');
     }
 
-    // View lesson
-    window.viewLesson = function(lessonKey, lessonIndex, locationId) {
-      // Collect all lessons from all phases and modules
-      let allLessons = [];
-      if (gameState.trainingData && gameState.trainingData.phases) {
-        gameState.trainingData.phases.forEach(phase => {
-          if (phase.modules) {
-            phase.modules.forEach(module => {
-              if (module.lessons) {
-                allLessons = allLessons.concat(module.lessons);
-              }
-            });
-          }
-        });
-      }
+    // Check if all lessons in a module are completed
+    function isModuleCompleted(moduleId) {
+      if (!gameState.trainingData || !gameState.trainingData.lessons) return false;
 
-      if (!allLessons[lessonIndex]) {
-        alert('Lesson content not available');
+      const moduleLessons = gameState.trainingData.lessons.filter(
+        lesson => lesson.Module_ID === moduleId && lesson.Status === 'active'
+      );
+
+      if (moduleLessons.length === 0) return false;
+
+      return moduleLessons.every(lesson =>
+        gameState.progress.completedLessons[lesson.Lesson_ID]
+      );
+    }
+
+    // View module - shows lessons in a module
+    window.viewModule = function(moduleId, locationId) {
+      const modal = document.getElementById('questModal');
+      const title = document.getElementById('modalTitle');
+      const description = document.getElementById('modalDescription');
+      const body = document.getElementById('modalBody');
+
+      // Find the module
+      const module = gameState.trainingData.modules.find(m => m.Module_ID === moduleId);
+      if (!module) {
+        alert('Module not found');
         return;
       }
 
-      const lesson = allLessons[lessonIndex];
+      title.textContent = `${module.Icon || '📚'} ${module.Title}`;
+      description.textContent = module.Description || 'Complete the lessons below';
+
+      // Get lessons for this module
+      const moduleLessons = gameState.trainingData.lessons.filter(
+        lesson => lesson.Module_ID === moduleId && lesson.Status === 'active'
+      );
+
+      if (moduleLessons.length > 0) {
+        // Sort by Lesson_Number
+        moduleLessons.sort((a, b) => (a.Lesson_Number || 0) - (b.Lesson_Number || 0));
+
+        let html = '<div class="lessonList">';
+        moduleLessons.forEach(lesson => {
+          const completed = gameState.progress.completedLessons[lesson.Lesson_ID] || false;
+          const statusClass = completed ? 'completed' : '';
+
+          html += `
+            <div class="lessonItem ${statusClass}" onclick="viewLesson('${lesson.Lesson_ID}', '${moduleId}', '${locationId}')">
+              <strong>${completed ? '✅' : '📖'} ${lesson.Title}</strong>
+              <p style="font-size: 0.9em; margin-top: 5px; color: #aaa;">
+                ${lesson.Duration ? `⏱️ ${lesson.Duration}` : ''} ${completed ? '• Completed!' : '• Click to start'}
+              </p>
+            </div>
+          `;
+        });
+        html += '</div>';
+
+        // Back button
+        html += `
+          <div class="btnGroup" style="margin-top: 20px;">
+            <button class="btn secondary" onclick="openQuestModal(gameState.questLocations.find(l => l.id === '${locationId}'))">
+              ← Back to ${gameState.questLocations.find(l => l.id === locationId).name}
+            </button>
+          </div>
+        `;
+
+        body.innerHTML = html;
+      } else {
+        body.innerHTML = `
+          <p>No lessons available in this module yet.</p>
+          <div class="btnGroup" style="margin-top: 20px;">
+            <button class="btn secondary" onclick="openQuestModal(gameState.questLocations.find(l => l.id === '${locationId}'))">
+              ← Back to ${gameState.questLocations.find(l => l.id === locationId).name}
+            </button>
+          </div>
+        `;
+      }
+    };
+
+    // View lesson - shows lesson content
+    window.viewLesson = function(lessonId, moduleId, locationId) {
       const body = document.getElementById('modalBody');
+      const title = document.getElementById('modalTitle');
+
+      // Find the lesson
+      const lesson = gameState.trainingData.lessons.find(l => l.Lesson_ID === lessonId);
+      if (!lesson) {
+        alert('Lesson not found');
+        return;
+      }
+
+      // Get lesson content
+      const content = gameState.trainingData.lessonContent.find(c => c.Lesson_ID === lessonId);
+
+      title.textContent = lesson.Title;
+
+      let contentHtml = '';
+
+      if (content) {
+        // Video content
+        if (content.Video_URL) {
+          // Extract YouTube video ID and create embed
+          let videoEmbed = '';
+          if (content.Video_URL.includes('youtube.com') || content.Video_URL.includes('youtu.be')) {
+            const videoId = content.Video_URL.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([^&\s]+)/)?.[1];
+            if (videoId) {
+              videoEmbed = `
+                <div style="position: relative; padding-bottom: 56.25%; height: 0; margin-bottom: 20px;">
+                  <iframe
+                    style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; border-radius: 8px;"
+                    src="https://www.youtube.com/embed/${videoId}"
+                    frameborder="0"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                    allowfullscreen>
+                  </iframe>
+                </div>
+              `;
+            }
+          } else {
+            videoEmbed = `<p><a href="${content.Video_URL}" target="_blank" style="color: #F5008B;">🎥 Watch Video</a></p>`;
+          }
+          contentHtml += videoEmbed;
+        }
+
+        // Image content
+        if (content.Image_URL) {
+          contentHtml += `<img src="${content.Image_URL}" style="max-width: 100%; border-radius: 8px; margin-bottom: 15px;" alt="Lesson image">`;
+        }
+
+        // Text content
+        if (content.Text_Content) {
+          contentHtml += `<p style="line-height: 1.8; color: #ccc; white-space: pre-wrap;">${content.Text_Content}</p>`;
+        }
+
+        // PDF download
+        if (content.PDF_URL) {
+          contentHtml += `<p style="margin-top: 15px;"><a href="${content.PDF_URL}" target="_blank" style="color: #F5008B;">📄 Download PDF</a></p>`;
+        }
+      } else {
+        contentHtml = '<p style="color: #aaa;">Lesson content coming soon...</p>';
+      }
+
+      const completed = gameState.progress.completedLessons[lessonId] || false;
 
       body.innerHTML = `
         <div style="background: #1a1a2e; padding: 20px; border-radius: 12px; border: 2px solid #F5008B;">
-          <h3 style="color: #F5008B; margin-bottom: 15px;">${lesson.title}</h3>
-          <p style="line-height: 1.8; color: #ccc;">${lesson.content || 'Lesson content coming soon...'}</p>
+          ${contentHtml}
           <div class="btnGroup" style="margin-top: 20px;">
-            <button class="btn" onclick="completeLesson('${lessonKey}')">Mark as Complete (+100 XP)</button>
-            <button class="btn secondary" onclick="openQuestModal(gameState.questLocations.find(l => l.id === '${locationId}'))">Back to Lessons</button>
+            ${!completed ? `<button class="btn" onclick="completeLesson('${lessonId}', '${moduleId}', '${locationId}')">Mark as Complete (+100 XP)</button>` : '<p style="color: #21ef80;">✅ Completed!</p>'}
+            <button class="btn secondary" onclick="viewModule('${moduleId}', '${locationId}')">← Back to Module</button>
           </div>
         </div>
       `;
     };
 
     // Complete lesson
-    window.completeLesson = function(lessonKey) {
-      if (!gameState.progress.completedLessons[lessonKey]) {
-        gameState.progress.completedLessons[lessonKey] = true;
+    window.completeLesson = function(lessonId, moduleId, locationId) {
+      if (!gameState.progress.completedLessons[lessonId]) {
+        gameState.progress.completedLessons[lessonId] = true;
         addXP(100);
 
-        // Check if location is complete
-        const locationId = lessonKey.split('_')[0];
+        // Check if all modules in this location are complete
         const location = gameState.questLocations.find(l => l.id === locationId);
-
         if (location && !gameState.progress.completedLocations.includes(locationId)) {
-          // Check if all lessons for this location are complete
-          const locationLessons = Object.keys(gameState.progress.completedLessons)
-            .filter(key => key.startsWith(locationId + '_'));
+          const locationModules = gameState.trainingData.modules.filter(
+            m => m.Location_ID === locationId && m.Status === 'active'
+          );
 
-          if (locationLessons.length >= 1) { // Simplified: complete location after 1 lesson
+          const allModulesComplete = locationModules.every(module => isModuleCompleted(module.Module_ID));
+
+          if (allModulesComplete) {
             gameState.progress.completedLocations.push(locationId);
 
             // Unlock next location
             const currentIndex = gameState.questLocations.findIndex(l => l.id === locationId);
             if (currentIndex >= 0 && currentIndex < gameState.questLocations.length - 1) {
               gameState.questLocations[currentIndex + 1].unlocked = true;
-              renderQuestMarkers(); // Re-render to show unlocked state
+              renderQuestMarkers();
             }
 
             alert(`🎉 ${location.name} Complete! Next location unlocked!`);
@@ -764,7 +921,8 @@
         }
 
         saveProgress();
-        openQuestModal(location);
+        // Refresh the module view
+        viewModule(moduleId, locationId);
       }
     };
 
