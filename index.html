@@ -1,795 +1,850 @@
-📝 HERE'S YOUR COMPLETE WORKING PIXEL TRAINING PORTAL!
-Copy this ONE HTML FILE and paste it in your GitHub repo as index.html:
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MoeFlavor Pixel Quest - Training Portal</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MoeFlavor Training Portal</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
 
-        body {
-            font-family: 'Courier New', monospace;
-            background: #1a1a2e;
-            color: white;
-            overflow: hidden;
-        }
+    body {
+      font-family: 'Courier New', monospace;
+      background: #1a1a2e;
+      color: #fff;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      padding: 20px;
+    }
 
-        /* Pixel Art Font */
-        .pixel-font {
-            font-family: 'Courier New', monospace;
-            font-weight: bold;
-            text-transform: uppercase;
-            image-rendering: pixelated;
-        }
+    #gameContainer {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 20px;
+    }
 
-        /* Status Bar */
-        .status-bar {
-            background: #16213e;
-            border-bottom: 4px solid #0f3460;
-            padding: 15px 20px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            position: sticky;
-            top: 0;
-            z-index: 1000;
-        }
+    #header {
+      text-align: center;
+      margin-bottom: 10px;
+    }
 
-        .status-left {
-            display: flex;
-            gap: 30px;
-            align-items: center;
-        }
+    #header h1 {
+      font-size: 2.5em;
+      color: #F5008B;
+      text-shadow: 0 0 10px rgba(245, 0, 139, 0.5);
+      margin-bottom: 10px;
+    }
 
-        .stat-item {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
+    #header p {
+      color: #aaa;
+      font-size: 0.9em;
+    }
 
-        .bar-container {
-            width: 120px;
-            height: 20px;
-            background: #0f3460;
-            border: 2px solid #fff;
-            position: relative;
-        }
+    #statsBar {
+      background: #0f0f1e;
+      border: 3px solid #F5008B;
+      border-radius: 8px;
+      padding: 15px 30px;
+      display: flex;
+      gap: 40px;
+      align-items: center;
+      box-shadow: 0 0 20px rgba(245, 0, 139, 0.3);
+    }
 
-        .bar-fill {
-            height: 100%;
-            transition: width 0.3s;
-        }
+    .statGroup {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+    }
 
-        .hp-bar { background: #e94560; }
-        .xp-bar { background: #f5008b; }
+    .statLabel {
+      font-size: 0.8em;
+      color: #aaa;
+      text-transform: uppercase;
+    }
 
-        .title {
-            font-size: 24px;
-            color: #f5008b;
-            text-shadow: 2px 2px #000;
-        }
+    .statBar {
+      width: 200px;
+      height: 20px;
+      background: #333;
+      border: 2px solid #555;
+      border-radius: 4px;
+      overflow: hidden;
+      position: relative;
+    }
 
-        /* Game Container */
-        .game-container {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            min-height: calc(100vh - 70px);
-            padding: 20px;
-        }
+    .statFill {
+      height: 100%;
+      transition: width 0.3s ease;
+      position: relative;
+    }
 
-        /* Map Container */
-        .map-container {
-            position: relative;
-            width: 800px;
-            height: 600px;
-            background: #88c070;
-            border: 8px solid #4a4a4a;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-            overflow: hidden;
-        }
+    .hpBar {
+      background: linear-gradient(90deg, #F5008B, #F77AAC);
+    }
 
-        /* Map Tiles */
-        .tile {
-            position: absolute;
-            width: 64px;
-            height: 64px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 12px;
-            font-weight: bold;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
+    .xpBar {
+      background: linear-gradient(90deg, #21ef80, #4CAF50);
+    }
 
-        .tile:hover {
-            transform: scale(1.05);
-            filter: brightness(1.2);
-        }
+    .statText {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      font-size: 0.75em;
+      font-weight: bold;
+      text-shadow: 0 0 3px #000;
+      z-index: 1;
+    }
 
-        /* Tile Types */
-        .grass { background: #88c070; }
-        .path { background: #d4a574; }
-        .water { background: #5080a8; }
+    #canvasContainer {
+      position: relative;
+      border: 4px solid #F5008B;
+      border-radius: 8px;
+      box-shadow: 0 0 30px rgba(245, 0, 139, 0.4);
+      background: #000;
+    }
 
-        /* Buildings */
-        .building {
-            width: 96px;
-            height: 96px;
-            border: 4px solid #000;
-            font-size: 48px;
-            box-shadow: 4px 4px 0 rgba(0,0,0,0.3);
-        }
+    #gameCanvas {
+      display: block;
+      image-rendering: pixelated;
+      image-rendering: -moz-crisp-edges;
+      image-rendering: crisp-edges;
+    }
 
-        .castle { background: linear-gradient(135deg, #c05050, #a03030); }
-        .toolshop { background: linear-gradient(135deg, #f0c050, #d0a030); }
-        .forge { background: linear-gradient(135deg, #ff6b35, #d04020); }
-        .workshop { background: linear-gradient(135deg, #8068a0, #604880); }
-        .market { background: linear-gradient(135deg, #50c878, #30a858); }
-        .service { background: linear-gradient(135deg, #5bc0de, #3ba0be); }
+    #loadingScreen {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.9);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 20px;
+      z-index: 1000;
+    }
 
-        /* Character */
-        .character {
-            position: absolute;
-            width: 48px;
-            height: 48px;
-            background: #f5008b;
-            border: 3px solid #fff;
-            border-radius: 8px;
-            transition: all 0.2s;
-            z-index: 100;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 24px;
-            box-shadow: 3px 3px 0 rgba(0,0,0,0.3);
-        }
+    #loadingScreen.hidden {
+      display: none;
+    }
 
-        /* Modal/Dialog */
-        .modal {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0,0,0,0.8);
-            z-index: 2000;
-            align-items: center;
-            justify-content: center;
-        }
+    .spinner {
+      border: 4px solid #333;
+      border-top: 4px solid #F5008B;
+      border-radius: 50%;
+      width: 50px;
+      height: 50px;
+      animation: spin 1s linear infinite;
+    }
 
-        .modal.active {
-            display: flex;
-        }
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
 
-        .modal-content {
-            background: #16213e;
-            border: 6px solid #f5008b;
-            border-radius: 10px;
-            padding: 30px;
-            max-width: 600px;
-            max-height: 80vh;
-            overflow-y: auto;
-            box-shadow: 0 20px 60px rgba(245,0,139,0.5);
-        }
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.8);
+      z-index: 2000;
+      align-items: center;
+      justify-content: center;
+    }
 
-        .modal-title {
-            font-size: 28px;
-            color: #f5008b;
-            margin-bottom: 20px;
-            text-align: center;
-        }
+    .modal.active {
+      display: flex;
+    }
 
-        .modal-text {
-            font-size: 16px;
-            line-height: 1.6;
-            margin-bottom: 20px;
-            color: #e0e0e0;
-        }
+    .modalContent {
+      background: #0f0f1e;
+      border: 3px solid #F5008B;
+      border-radius: 12px;
+      padding: 30px;
+      max-width: 600px;
+      max-height: 80vh;
+      overflow-y: auto;
+      box-shadow: 0 0 40px rgba(245, 0, 139, 0.5);
+    }
 
-        .btn {
-            background: linear-gradient(135deg, #f5008b, #e94560);
-            color: white;
-            border: 3px solid #fff;
-            padding: 15px 30px;
-            font-size: 18px;
-            font-weight: bold;
-            cursor: pointer;
-            border-radius: 8px;
-            transition: all 0.2s;
-            margin: 5px;
-            box-shadow: 4px 4px 0 rgba(0,0,0,0.3);
-        }
+    .modalContent h2 {
+      color: #F5008B;
+      margin-bottom: 20px;
+      font-size: 1.8em;
+    }
 
-        .btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 6px 6px 0 rgba(0,0,0,0.3);
-        }
+    .modalContent p {
+      line-height: 1.6;
+      margin-bottom: 15px;
+      color: #ccc;
+    }
 
-        .btn:active {
-            transform: translateY(0);
-            box-shadow: 2px 2px 0 rgba(0,0,0,0.3);
-        }
+    .lessonList {
+      margin: 20px 0;
+    }
 
-        .btn-secondary {
-            background: linear-gradient(135deg, #6c757d, #5a6268);
-        }
+    .lessonItem {
+      background: #1a1a2e;
+      border: 2px solid #333;
+      border-radius: 8px;
+      padding: 15px;
+      margin-bottom: 10px;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
 
-        /* Module List */
-        .module-list {
-            margin: 20px 0;
-        }
+    .lessonItem:hover {
+      border-color: #F5008B;
+      background: #252538;
+    }
 
-        .module-item {
-            background: rgba(255,255,255,0.1);
-            border: 2px solid #f5008b;
-            padding: 15px;
-            margin: 10px 0;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
+    .lessonItem.completed {
+      border-color: #21ef80;
+      opacity: 0.7;
+    }
 
-        .module-item:hover {
-            background: rgba(245,0,139,0.2);
-            transform: translateX(5px);
-        }
+    .lessonItem.locked {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
 
-        .module-item.completed {
-            background: rgba(0,255,0,0.2);
-            border-color: #00ff00;
-        }
+    .btnGroup {
+      display: flex;
+      gap: 15px;
+      margin-top: 20px;
+    }
 
-        /* Quiz Styles */
-        .quiz-question {
-            background: rgba(255,255,255,0.1);
-            padding: 20px;
-            margin: 20px 0;
-            border-radius: 8px;
-        }
+    .btn {
+      background: linear-gradient(45deg, #F5008B, #F77AAC);
+      color: white;
+      border: none;
+      padding: 12px 24px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-family: 'Courier New', monospace;
+      font-weight: bold;
+      font-size: 1em;
+      transition: all 0.3s;
+      box-shadow: 0 4px 0 #000, 0 0 15px rgba(245, 0, 139, 0.5);
+    }
 
-        .quiz-option {
-            background: rgba(255,255,255,0.1);
-            border: 2px solid #6c757d;
-            padding: 12px;
-            margin: 8px 0;
-            border-radius: 6px;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
+    .btn:hover {
+      transform: translateY(2px);
+      box-shadow: 0 2px 0 #000, 0 0 25px rgba(245, 0, 139, 0.8);
+    }
 
-        .quiz-option:hover {
-            background: rgba(245,0,139,0.2);
-            border-color: #f5008b;
-        }
+    .btn:active {
+      transform: translateY(4px);
+      box-shadow: 0 0 0 #000;
+    }
 
-        .quiz-option.selected {
-            background: rgba(245,0,139,0.3);
-            border-color: #f5008b;
-        }
+    .btn.secondary {
+      background: linear-gradient(45deg, #333, #555);
+    }
 
-        .quiz-option.correct {
-            background: rgba(0,255,0,0.3);
-            border-color: #00ff00;
-        }
+    .quizQuestion {
+      background: #1a1a2e;
+      border: 2px solid #F5008B;
+      border-radius: 8px;
+      padding: 20px;
+      margin-bottom: 20px;
+    }
 
-        .quiz-option.incorrect {
-            background: rgba(255,0,0,0.3);
-            border-color: #ff0000;
-        }
+    .quizOptions {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin-top: 15px;
+    }
 
-        /* Loading */
-        .loading {
-            text-align: center;
-            font-size: 24px;
-            padding: 40px;
-        }
+    .quizOption {
+      background: #252538;
+      border: 2px solid #333;
+      border-radius: 6px;
+      padding: 12px;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
 
-        .hidden {
-            display: none !important;
-        }
+    .quizOption:hover {
+      border-color: #F5008B;
+      background: #2a2a40;
+    }
 
-        /* Instructions */
-        .instructions {
-            text-align: center;
-            margin-top: 20px;
-            font-size: 14px;
-            color: #aaa;
-        }
-    </style>
+    .quizOption.selected {
+      border-color: #F5008B;
+      background: #2a2a40;
+    }
+
+    .quizOption.correct {
+      border-color: #21ef80;
+      background: rgba(33, 239, 128, 0.2);
+    }
+
+    .quizOption.incorrect {
+      border-color: #ff4444;
+      background: rgba(255, 68, 68, 0.2);
+    }
+
+    #instructions {
+      background: #0f0f1e;
+      border: 2px solid #333;
+      border-radius: 8px;
+      padding: 15px;
+      margin-top: 10px;
+      text-align: center;
+      max-width: 800px;
+    }
+
+    #instructions p {
+      color: #aaa;
+      font-size: 0.9em;
+    }
+
+    .locationMarker {
+      position: absolute;
+      cursor: pointer;
+      transition: transform 0.2s;
+      z-index: 100;
+    }
+
+    .locationMarker:hover {
+      transform: scale(1.2);
+    }
+
+    .locationMarker.locked {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+
+    .locationIcon {
+      font-size: 32px;
+      filter: drop-shadow(0 0 5px rgba(0, 0, 0, 0.8));
+    }
+
+    .locationLabel {
+      position: absolute;
+      bottom: -20px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 10px;
+      white-space: nowrap;
+      background: rgba(0, 0, 0, 0.8);
+      padding: 2px 6px;
+      border-radius: 4px;
+    }
+  </style>
 </head>
-<body class="pixel-font">
-
-    <!-- Status Bar -->
-    <div class="status-bar">
-        <div class="status-left">
-            <div class="stat-item">
-                <span style="font-size: 20px;">LVL <span id="player-level">1</span></span>
-            </div>
-            <div class="stat-item">
-                <span>HP:</span>
-                <div class="bar-container">
-                    <div id="hp-bar" class="bar-fill hp-bar" style="width: 100%;"></div>
-                </div>
-                <span id="hp-text">100/100</span>
-            </div>
-            <div class="stat-item">
-                <span>XP:</span>
-                <div class="bar-container">
-                    <div id="xp-bar" class="bar-fill xp-bar" style="width: 0%;"></div>
-                </div>
-                <span id="xp-text">0/100</span>
-            </div>
-        </div>
-        <div class="title">MoeFlavor Quest</div>
-        <div class="status-right">
-            <span id="location-name">Loading...</span>
-        </div>
+<body>
+  <div id="gameContainer">
+    <div id="header">
+      <h1>🌸 MoeFlavor Training Portal 🌸</h1>
+      <p>Navigate your pixel adventure and complete quests to level up!</p>
     </div>
 
-    <!-- Game Container -->
-    <div class="game-container">
-        <!-- Map -->
-        <div class="map-container" id="map">
-            <!-- Buildings -->
-            <div class="tile building castle" style="left: 100px; top: 50px;" onclick="enterLocation('castle')">
-                🏰
-            </div>
-            <div class="tile building toolshop" style="left: 300px; top: 200px;" onclick="enterLocation('toolshop')">
-                🔨
-            </div>
-            <div class="tile building forge" style="left: 500px; top: 100px;" onclick="enterLocation('forge')">
-                🏭
-            </div>
-            <div class="tile building workshop" style="left: 600px; top: 300px;" onclick="enterLocation('workshop')">
-                📦
-            </div>
-            <div class="tile building market" style="left: 400px; top: 450px;" onclick="enterLocation('market')">
-                🛒
-            </div>
-            <div class="tile building service" style="left: 150px; top: 400px;" onclick="enterLocation('service')">
-                💬
-            </div>
-
-            <!-- Character -->
-            <div class="character" id="character" style="left: 100px; top: 150px;">
-                👤
-            </div>
+    <div id="statsBar">
+      <div class="statGroup">
+        <div class="statLabel">Health Points</div>
+        <div class="statBar">
+          <div class="statFill hpBar" id="hpFill" style="width: 100%">
+            <div class="statText" id="hpText">100 / 100</div>
+          </div>
         </div>
-
-        <div class="instructions">
-            Use WASD or Arrow Keys to move • Click buildings to enter
+      </div>
+      <div class="statGroup">
+        <div class="statLabel">Experience</div>
+        <div class="statBar">
+          <div class="statFill xpBar" id="xpFill" style="width: 0%">
+            <div class="statText" id="xpText">0 / 600</div>
+          </div>
         </div>
+      </div>
+      <div class="statGroup">
+        <div class="statLabel">Level</div>
+        <div style="font-size: 1.5em; color: #21ef80; text-align: center;" id="levelText">1</div>
+      </div>
     </div>
 
-    <!-- Modal Dialog -->
-    <div class="modal" id="modal">
-        <div class="modal-content">
-            <div class="modal-title" id="modal-title">Location</div>
-            <div id="modal-body"></div>
-        </div>
+    <div id="canvasContainer">
+      <canvas id="gameCanvas" width="800" height="600"></canvas>
+      <div id="loadingScreen">
+        <div class="spinner"></div>
+        <p>Loading Training Portal...</p>
+      </div>
     </div>
 
-    <script>
-        // Configuration
-        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzz_zl42rXJXpwoEE-M5RyRw5lQoIDfWahRV1zbuSv8xL-ZdGyqxV4EGc0lG4nRcr9z/exec';
+    <div id="instructions">
+      <p>🎮 Use <strong>WASD</strong> or <strong>Arrow Keys</strong> to move • Click on quest locations to start training</p>
+    </div>
+  </div>
 
-        // Game State
-        let gameState = {
-            level: 1,
-            hp: 100,
-            maxHp: 100,
-            xp: 0,
-            maxXp: 100,
-            completed: [],
-            currentLocation: 'map',
-            characterPos: { x: 100, y: 150 }
-        };
+  <!-- Modal for Quest Locations -->
+  <div id="questModal" class="modal">
+    <div class="modalContent">
+      <h2 id="modalTitle">Quest Location</h2>
+      <p id="modalDescription"></p>
+      <div id="modalBody"></div>
+      <div class="btnGroup">
+        <button class="btn secondary" onclick="closeModal()">Close</button>
+      </div>
+    </div>
+  </div>
 
-        // Training Data (from Google Sheets)
-        let trainingData = {
-            phases: [],
-            team: []
-        };
+  <script>
+    // Configuration
+    const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzz_zl42rXJXpwoEE-M5RyRw5lQoIDfWahRV1zbuSv8xL-ZdGyqxV4EGc0lG4nRcr9z/exec';
+    const TILE_SIZE = 32;
+    const MAP_WIDTH = 25;
+    const MAP_HEIGHT = 19;
 
-        // Load saved progress
-        function loadProgress() {
-            const saved = localStorage.getItem('moeflavor-progress');
-            if (saved) {
-                gameState = { ...gameState, ...JSON.parse(saved) };
-                updateUI();
-            }
-        }
+    // Game State
+    let gameState = {
+      player: {
+        x: 400,
+        y: 300,
+        speed: 3,
+        direction: 'down',
+        isWalking: false
+      },
+      stats: {
+        hp: 100,
+        maxHp: 100,
+        xp: 0,
+        maxXp: 600,
+        level: 1
+      },
+      progress: {
+        completedLocations: [],
+        completedLessons: {}
+      },
+      questLocations: [
+        { id: 'castle', name: '🏰 Castle', x: 400, y: 150, icon: '🏰', unlocked: true },
+        { id: 'toolshop', name: '🔧 Tool Shop', x: 200, y: 250, icon: '🔧', unlocked: false },
+        { id: 'forge', name: '⚒️ Forge', x: 600, y: 250, icon: '⚒️', unlocked: false },
+        { id: 'workshop', name: '🛠️ Workshop', x: 300, y: 400, icon: '🛠️', unlocked: false },
+        { id: 'market', name: '🏪 Market', x: 500, y: 400, icon: '🏪', unlocked: false },
+        { id: 'service', name: '🏛️ Service Hall', x: 400, y: 500, icon: '🏛️', unlocked: false }
+      ],
+      trainingData: null
+    };
 
-        // Save progress
-        function saveProgress() {
-            localStorage.setItem('moeflavor-progress', JSON.stringify(gameState));
-        }
+    // Keyboard state
+    const keys = {};
 
-        // Fetch training data from Google Sheets
-        async function fetchTrainingData() {
-            try {
-                document.getElementById('location-name').textContent = 'Loading training data...';
-                
-                const response = await fetch(`${SCRIPT_URL}?endpoint=structure`);
-                const data = await response.json();
-                
-                if (data.phases) {
-                    trainingData.phases = data.phases;
-                }
+    // Canvas setup
+    const canvas = document.getElementById('gameCanvas');
+    const ctx = canvas.getContext('2d');
+    ctx.imageSmoothingEnabled = false;
 
-                const teamResponse = await fetch(`${SCRIPT_URL}?endpoint=team`);
-                const teamData = await teamResponse.json();
-                if (teamData) {
-                    trainingData.team = teamData;
-                }
+    // Load saved progress
+    function loadProgress() {
+      const saved = localStorage.getItem('moeflavor_training_progress');
+      if (saved) {
+        const data = JSON.parse(saved);
+        gameState.stats = data.stats || gameState.stats;
+        gameState.progress = data.progress || gameState.progress;
 
-                document.getElementById('location-name').textContent = 'Ready to Adventure!';
-                
-                // Show castle intro if first time
-                if (!gameState.completed.includes('castle')) {
-                    setTimeout(() => enterLocation('castle'), 1000);
-                }
-            } catch (error) {
-                console.error('Error loading training data:', error);
-                document.getElementById('location-name').textContent = 'Error loading data';
-                // Continue with demo data
-                trainingData.phases = [
+        // Unlock locations based on progress
+        gameState.progress.completedLocations.forEach((locId, index) => {
+          const nextIndex = index + 1;
+          if (nextIndex < gameState.questLocations.length) {
+            gameState.questLocations[nextIndex].unlocked = true;
+          }
+        });
+      }
+      updateStatsDisplay();
+    }
+
+    // Save progress
+    function saveProgress() {
+      const data = {
+        stats: gameState.stats,
+        progress: gameState.progress
+      };
+      localStorage.setItem('moeflavor_training_progress', JSON.stringify(data));
+    }
+
+    // Fetch training data from Google Sheets
+    async function fetchTrainingData() {
+      try {
+        const response = await fetch(SCRIPT_URL);
+        const data = await response.json();
+        gameState.trainingData = data;
+        console.log('Training data loaded:', data);
+      } catch (error) {
+        console.error('Failed to load training data:', error);
+        // Use fallback data if API fails
+        gameState.trainingData = {
+          phases: [
+            {
+              name: 'Onboarding',
+              modules: [
+                {
+                  name: 'Welcome to MoeFlavor',
+                  lessons: [
+                    { title: 'Introduction', content: 'Welcome to the MoeFlavor family!' }
+                  ],
+                  quiz: [
                     {
-                        id: 'P1',
-                        title: 'Foundation',
-                        modules: [
-                            {
-                                id: 'M1',
-                                title: 'Welcome to MoeFlavor',
-                                lessons: [
-                                    { id: 'L1', title: 'The MoeFlavor Story', duration: '5 min' },
-                                    { id: 'L2', title: 'Our Mission', duration: '3 min' }
-                                ],
-                                quiz: { id: 'Q1', title: 'Foundation Quiz' }
-                            }
-                        ]
+                      question: 'What is MoeFlavor?',
+                      options: ['A kawaii brand', 'A restaurant', 'A game', 'A book'],
+                      correct: 0
                     }
-                ];
-            }
-        }
-
-        // Update UI
-        function updateUI() {
-            document.getElementById('player-level').textContent = gameState.level;
-            document.getElementById('hp-text').textContent = `${gameState.hp}/${gameState.maxHp}`;
-            document.getElementById('xp-text').textContent = `${gameState.xp}/${gameState.maxXp}`;
-            document.getElementById('hp-bar').style.width = `${(gameState.hp / gameState.maxHp) * 100}%`;
-            document.getElementById('xp-bar').style.width = `${(gameState.xp / gameState.maxXp) * 100}%`;
-            
-            const character = document.getElementById('character');
-            character.style.left = gameState.characterPos.x + 'px';
-            character.style.top = gameState.characterPos.y + 'px';
-        }
-
-        // Character Movement
-        const keysPressed = new Set();
-
-        document.addEventListener('keydown', (e) => {
-            if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'w', 'a', 's', 'd'].includes(e.key)) {
-                e.preventDefault();
-                keysPressed.add(e.key.toLowerCase());
-            }
-        });
-
-        document.addEventListener('keyup', (e) => {
-            keysPressed.delete(e.key.toLowerCase());
-        });
-
-        function moveCharacter() {
-            const speed = 3;
-            let newX = gameState.characterPos.x;
-            let newY = gameState.characterPos.y;
-
-            if (keysPressed.has('arrowup') || keysPressed.has('w')) newY -= speed;
-            if (keysPressed.has('arrowdown') || keysPressed.has('s')) newY += speed;
-            if (keysPressed.has('arrowleft') || keysPressed.has('a')) newX -= speed;
-            if (keysPressed.has('arrowright') || keysPressed.has('d')) newX += speed;
-
-            // Boundaries
-            newX = Math.max(0, Math.min(750, newX));
-            newY = Math.max(0, Math.min(550, newY));
-
-            gameState.characterPos = { x: newX, y: newY };
-            updateUI();
-
-            requestAnimationFrame(moveCharacter);
-        }
-
-        moveCharacter();
-
-        // Enter Location
-        function enterLocation(location) {
-            const modal = document.getElementById('modal');
-            const title = document.getElementById('modal-title');
-            const body = document.getElementById('modal-body');
-
-            gameState.currentLocation = location;
-            document.getElementById('location-name').textContent = getLocationName(location);
-
-            let content = '';
-
-            switch(location) {
-                case 'castle':
-                    title.textContent = '🏰 The Royal Castle';
-                    content = `
-                        <div class="modal-text">
-                            <h3>Welcome, Noble Recruit!</h3>
-                            <p>Welcome to MoeFlavor Kingdom! You are about to embark on an epic journey to master the art of kawaii commerce.</p>
-                            <p><strong>Your Quest:</strong> Travel through our realm, completing training at each location to become a MoeFlavor Master!</p>
-                            <h4 style="color: #f5008b; margin-top: 20px;">Meet Your Leaders:</h4>
-                        </div>
-                        <div class="module-list" id="team-list"></div>
-                        <button class="btn" onclick="completeCastle()">Begin Your Adventure!</button>
-                        <button class="btn btn-secondary" onclick="closeModal()">Explore Later</button>
-                    `;
-                    body.innerHTML = content;
-                    loadTeam();
-                    break;
-
-                case 'toolshop':
-                    title.textContent = '🔨 The Tool Shop';
-                    content = `
-                        <div class="modal-text">
-                            <h3>Essential Training Modules</h3>
-                            <p>Learn the core skills every MoeFlavor team member needs!</p>
-                        </div>
-                        <div class="module-list" id="modules-list"></div>
-                        <button class="btn btn-secondary" onclick="closeModal()">Exit Shop</button>
-                    `;
-                    body.innerHTML = content;
-                    loadModules('toolshop');
-                    break;
-
-                case 'forge':
-                    title.textContent = '🏭 The Forge';
-                    content = `
-                        <div class="modal-text">
-                            <h3>Product Research & Development</h3>
-                            <p>Learn how we discover trends and create amazing kawaii products!</p>
-                            ${isLocked('forge') ? '<p style="color: #ff6b6b;">⚠️ Complete Tool Shop first!</p>' : ''}
-                        </div>
-                        ${!isLocked('forge') ? '<div class="module-list" id="modules-list"></div>' : ''}
-                        <button class="btn btn-secondary" onclick="closeModal()">Exit Forge</button>
-                    `;
-                    body.innerHTML = content;
-                    if (!isLocked('forge')) loadModules('forge');
-                    break;
-
-                case 'workshop':
-                    title.textContent = '📦 The Workshop';
-                    content = `
-                        <div class="modal-text">
-                            <h3>Production Process</h3>
-                            <p>Master the art of bringing products to life!</p>
-                            ${isLocked('workshop') ? '<p style="color: #ff6b6b;">⚠️ Complete Forge first!</p>' : ''}
-                        </div>
-                        ${!isLocked('workshop') ? '<div class="module-list" id="modules-list"></div>' : ''}
-                        <button class="btn btn-secondary" onclick="closeModal()">Exit Workshop</button>
-                    `;
-                    body.innerHTML = content;
-                    if (!isLocked('workshop')) loadModules('workshop');
-                    break;
-
-                case 'market':
-                    title.textContent = '🛒 The Market';
-                    content = `
-                        <div class="modal-text">
-                            <h3>Marketing Mastery</h3>
-                            <p>Choose your specialization:</p>
-                            ${isLocked('market') ? '<p style="color: #ff6b6b;">⚠️ Complete Workshop first!</p>' : ''}
-                        </div>
-                        ${!isLocked('market') ? `
-                            <div class="module-list">
-                                <div class="module-item" onclick="loadMarketRole('shopify')">🛍️ Shopify Management</div>
-                                <div class="module-item" onclick="loadMarketRole('ads')">📢 Advertising</div>
-                                <div class="module-item" onclick="loadMarketRole('email')">📧 Email Marketing</div>
-                                <div class="module-item" onclick="loadMarketRole('graphics')">🎨 Graphics Design</div>
-                                <div class="module-item" onclick="loadMarketRole('social')">📱 Social Media</div>
-                                <div class="module-item" onclick="loadMarketRole('editors')">✂️ Video Editing</div>
-                            </div>
-                        ` : ''}
-                        <button class="btn btn-secondary" onclick="closeModal()">Exit Market</button>
-                    `;
-                    body.innerHTML = content;
-                    break;
-
-                case 'service':
-                    title.textContent = '💬 Service Hall';
-                    content = `
-                        <div class="modal-text">
-                            <h3>Customer Service Excellence</h3>
-                            <p>Learn to delight our customers with exceptional service!</p>
-                            ${isLocked('service') ? '<p style="color: #ff6b6b;">⚠️ Complete Market first!</p>' : ''}
-                        </div>
-                        ${!isLocked('service') ? '<div class="module-list" id="modules-list"></div>' : ''}
-                        <button class="btn btn-secondary" onclick="closeModal()">Exit Service Hall</button>
-                    `;
-                    body.innerHTML = content;
-                    if (!isLocked('service')) loadModules('service');
-                    break;
-            }
-
-            modal.classList.add('active');
-        }
-
-        // Load Team
-        function loadTeam() {
-            const teamList = document.getElementById('team-list');
-            if (!teamList) return;
-
-            if (trainingData.team && trainingData.team.length > 0) {
-                teamList.innerHTML = trainingData.team.map(member => `
-                    <div class="module-item">
-                        <div style="font-size: 24px; margin-bottom: 5px;">${member.emoji}</div>
-                        <strong>${member.name}</strong> - ${member.role}
-                    </div>
-                `).join('');
-            } else {
-                teamList.innerHTML = `
-                    <div class="module-item">
-                        <div style="font-size: 24px;">👑</div>
-                        <strong>The Queen</strong> - Founder & CEO
-                    </div>
-                    <div class="module-item">
-                        <div style="font-size: 24px;">⚔️</div>
-                        <strong>The Knights</strong> - Your Amazing Team
-                    </div>
-                `;
-            }
-        }
-
-        // Load Modules
-        function loadModules(location) {
-            const modulesList = document.getElementById('modules-list');
-            if (!modulesList) return;
-
-            if (trainingData.phases && trainingData.phases.length > 0) {
-                const phase = trainingData.phases[0]; // Get first phase for now
-                if (phase.modules && phase.modules.length > 0) {
-                    modulesList.innerHTML = phase.modules.map(module => `
-                        <div class="module-item ${gameState.completed.includes(module.id) ? 'completed' : ''}" 
-                             onclick="viewModule('${module.id}')">
-                            <strong>${module.icon || '📚'} ${module.title}</strong>
-                            <div style="font-size: 12px; margin-top: 5px;">
-                                ${module.lessons ? module.lessons.length + ' lessons' : ''} 
-                                ${module.quiz ? '• Quiz included' : ''}
-                            </div>
-                            ${gameState.completed.includes(module.id) ? '<div style="color: #00ff00;">✓ Completed</div>' : ''}
-                        </div>
-                    `).join('');
-                    return;
+                  ]
                 }
+              ]
             }
+          ]
+        };
+      }
+    }
 
-            // Fallback demo content
-            modulesList.innerHTML = `
-                <div class="module-item" onclick="viewModule('demo1')">
-                    <strong>📚 Module 1: Introduction</strong>
-                    <div style="font-size: 12px; margin-top: 5px;">3 lessons • Quiz included</div>
+    // Update stats display
+    function updateStatsDisplay() {
+      const hpPercent = (gameState.stats.hp / gameState.stats.maxHp) * 100;
+      const xpPercent = (gameState.stats.xp / gameState.stats.maxXp) * 100;
+
+      document.getElementById('hpFill').style.width = `${hpPercent}%`;
+      document.getElementById('hpText').textContent = `${gameState.stats.hp} / ${gameState.stats.maxHp}`;
+
+      document.getElementById('xpFill').style.width = `${xpPercent}%`;
+      document.getElementById('xpText').textContent = `${gameState.stats.xp} / ${gameState.stats.maxXp}`;
+
+      document.getElementById('levelText').textContent = gameState.stats.level;
+    }
+
+    // Add XP
+    function addXP(amount) {
+      gameState.stats.xp += amount;
+      if (gameState.stats.xp >= gameState.stats.maxXp) {
+        gameState.stats.level++;
+        gameState.stats.xp = 0;
+        gameState.stats.maxXp = Math.floor(gameState.stats.maxXp * 1.5);
+        gameState.stats.hp = gameState.stats.maxHp;
+      }
+      updateStatsDisplay();
+      saveProgress();
+    }
+
+    // Draw pixel map
+    function drawMap() {
+      // Sky gradient
+      const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
+      gradient.addColorStop(0, '#4CC9E5');
+      gradient.addColorStop(0.7, '#7DD9F0');
+      gradient.addColorStop(1, '#4CAF50');
+      ctx.fillStyle = gradient;
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      // Ground
+      ctx.fillStyle = '#2d5f2e';
+      ctx.fillRect(0, canvas.height * 0.7, canvas.width, canvas.height * 0.3);
+
+      // Simple grass texture
+      ctx.fillStyle = '#3d8b40';
+      for (let i = 0; i < 100; i++) {
+        const x = Math.random() * canvas.width;
+        const y = canvas.height * 0.7 + Math.random() * (canvas.height * 0.3);
+        ctx.fillRect(x, y, 2, 2);
+      }
+
+      // Path
+      ctx.fillStyle = '#8B7355';
+      ctx.fillRect(canvas.width * 0.4, canvas.height * 0.7, canvas.width * 0.2, canvas.height * 0.3);
+    }
+
+    // Draw player character
+    function drawPlayer() {
+      const px = gameState.player.x;
+      const py = gameState.player.y;
+
+      // Shadow
+      ctx.fillStyle = 'rgba(0, 0, 0, 0.3)';
+      ctx.beginPath();
+      ctx.ellipse(px, py + 20, 8, 4, 0, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Head
+      ctx.fillStyle = '#FFD1B3';
+      ctx.fillRect(px - 8, py - 16, 16, 16);
+      ctx.strokeStyle = '#000';
+      ctx.lineWidth = 2;
+      ctx.strokeRect(px - 8, py - 16, 16, 16);
+
+      // Eyes
+      ctx.fillStyle = '#000';
+      if (gameState.player.direction === 'left') {
+        ctx.fillRect(px - 6, py - 10, 3, 3);
+      } else if (gameState.player.direction === 'right') {
+        ctx.fillRect(px + 3, py - 10, 3, 3);
+      } else {
+        ctx.fillRect(px - 6, py - 10, 3, 3);
+        ctx.fillRect(px + 3, py - 10, 3, 3);
+      }
+
+      // Body
+      ctx.fillStyle = '#F5008B';
+      ctx.fillRect(px - 8, py, 16, 12);
+      ctx.strokeRect(px - 8, py, 16, 12);
+
+      // Legs
+      const legOffset = gameState.player.isWalking ? 1 : 0;
+      ctx.fillStyle = '#333';
+      ctx.fillRect(px - 7, py + 12, 6, 10);
+      ctx.strokeRect(px - 7, py + 12, 6, 10);
+      ctx.fillRect(px + 1, py + 12, 6, 10);
+      ctx.strokeRect(px + 1, py + 12, 6, 10);
+    }
+
+    // Draw quest location markers
+    function drawQuestLocations() {
+      gameState.questLocations.forEach(location => {
+        ctx.save();
+
+        if (!location.unlocked) {
+          ctx.globalAlpha = 0.4;
+        }
+
+        // Draw icon background
+        ctx.fillStyle = location.unlocked ? '#F5008B' : '#666';
+        ctx.beginPath();
+        ctx.arc(location.x, location.y, 25, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.strokeStyle = '#000';
+        ctx.lineWidth = 3;
+        ctx.stroke();
+
+        // Draw icon
+        ctx.font = 'bold 32px Arial';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillStyle = '#fff';
+        ctx.fillText(location.icon, location.x, location.y);
+
+        // Draw label
+        ctx.font = 'bold 12px Courier New';
+        ctx.fillStyle = '#000';
+        ctx.fillRect(location.x - 40, location.y + 35, 80, 18);
+        ctx.fillStyle = '#fff';
+        ctx.fillText(location.name, location.x, location.y + 44);
+
+        ctx.restore();
+      });
+    }
+
+    // Update player movement
+    function updatePlayer() {
+      let moved = false;
+      let newX = gameState.player.x;
+      let newY = gameState.player.y;
+
+      if (keys['ArrowUp'] || keys['w']) {
+        newY -= gameState.player.speed;
+        gameState.player.direction = 'up';
+        moved = true;
+      }
+      if (keys['ArrowDown'] || keys['s']) {
+        newY += gameState.player.speed;
+        gameState.player.direction = 'down';
+        moved = true;
+      }
+      if (keys['ArrowLeft'] || keys['a']) {
+        newX -= gameState.player.speed;
+        gameState.player.direction = 'left';
+        moved = true;
+      }
+      if (keys['ArrowRight'] || keys['d']) {
+        newX += gameState.player.speed;
+        gameState.player.direction = 'right';
+        moved = true;
+      }
+
+      // Boundary checks
+      if (newX >= 20 && newX <= canvas.width - 20) {
+        gameState.player.x = newX;
+      }
+      if (newY >= 20 && newY <= canvas.height - 20) {
+        gameState.player.y = newY;
+      }
+
+      gameState.player.isWalking = moved;
+    }
+
+    // Game loop
+    function gameLoop() {
+      updatePlayer();
+
+      // Clear and redraw
+      drawMap();
+      drawQuestLocations();
+      drawPlayer();
+
+      requestAnimationFrame(gameLoop);
+    }
+
+    // Handle keyboard input
+    window.addEventListener('keydown', (e) => {
+      if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'w', 'a', 's', 'd'].includes(e.key)) {
+        e.preventDefault();
+        keys[e.key] = true;
+      }
+    });
+
+    window.addEventListener('keyup', (e) => {
+      keys[e.key] = false;
+    });
+
+    // Handle canvas clicks for quest locations
+    canvas.addEventListener('click', (e) => {
+      const rect = canvas.getBoundingClientRect();
+      const clickX = e.clientX - rect.left;
+      const clickY = e.clientY - rect.top;
+
+      gameState.questLocations.forEach(location => {
+        const dist = Math.sqrt(
+          Math.pow(clickX - location.x, 2) +
+          Math.pow(clickY - location.y, 2)
+        );
+
+        if (dist < 30) {
+          if (location.unlocked) {
+            openQuestModal(location);
+          } else {
+            alert('🔒 This location is locked! Complete previous quests to unlock.');
+          }
+        }
+      });
+    });
+
+    // Open quest modal
+    function openQuestModal(location) {
+      const modal = document.getElementById('questModal');
+      const title = document.getElementById('modalTitle');
+      const description = document.getElementById('modalDescription');
+      const body = document.getElementById('modalBody');
+
+      title.textContent = location.name;
+      description.textContent = `Welcome to the ${location.name}! Complete the training modules to gain experience.`;
+
+      // Generate lesson content
+      if (gameState.trainingData && gameState.trainingData.phases) {
+        const phase = gameState.trainingData.phases[0];
+        if (phase && phase.modules && phase.modules.length > 0) {
+          const module = phase.modules[0];
+
+          let html = '<div class="lessonList">';
+          if (module.lessons) {
+            module.lessons.forEach((lesson, index) => {
+              const lessonKey = `${location.id}_${index}`;
+              const completed = gameState.progress.completedLessons[lessonKey] || false;
+              const statusClass = completed ? 'completed' : '';
+
+              html += `
+                <div class="lessonItem ${statusClass}" onclick="viewLesson('${lessonKey}', ${index})">
+                  <strong>${completed ? '✅' : '📖'} ${lesson.title || 'Lesson ' + (index + 1)}</strong>
+                  <p style="font-size: 0.9em; margin-top: 5px; color: #aaa;">
+                    ${completed ? 'Completed!' : 'Click to start'}
+                  </p>
                 </div>
-                <div class="module-item" onclick="viewModule('demo2')">
-                    <strong>✨ Module 2: Core Skills</strong>
-                    <div style="font-size: 12px; margin-top: 5px;">5 lessons • Quiz included</div>
-                </div>
-            `;
+              `;
+            });
+          }
+          html += '</div>';
+          body.innerHTML = html;
+        } else {
+          body.innerHTML = '<p>No training modules available yet.</p>';
         }
+      } else {
+        body.innerHTML = '<p>Loading training data...</p>';
+      }
 
-        // View Module
-        function viewModule(moduleId) {
-            const body = document.getElementById('modal-body');
-            body.innerHTML = `
-                <div class="loading">Loading module...</div>
-            `;
+      modal.classList.add('active');
+    }
 
-            // Simulate lesson content
-            setTimeout(() => {
-                body.innerHTML = `
-                    <div class="modal-text">
-                        <h3>📖 Lesson Content</h3>
-                        <p>This is where the lesson content from your Google Sheets will appear!</p>
-                        <p>Videos, images, and text will be displayed here based on your LessonContent data.</p>
-                    </div>
-                    <button class="btn" onclick="completeModule('${moduleId}')">Complete Lesson</button>
-                    <button class="btn btn-secondary" onclick="enterLocation(gameState.currentLocation)">Back</button>
-                `;
-            }, 500);
-        }
+    // View lesson
+    window.viewLesson = function(lessonKey, lessonIndex) {
+      if (!gameState.trainingData?.phases?.[0]?.modules?.[0]?.lessons?.[lessonIndex]) {
+        alert('Lesson content not available');
+        return;
+      }
 
-        // Complete Module
-        function completeModule(moduleId) {
-            if (!gameState.completed.includes(moduleId)) {
-                gameState.completed.push(moduleId);
-                gameState.xp += 25;
-                
-                if (gameState.xp >= gameState.maxXp) {
-                    gameState.level++;
-                    gameState.xp = 0;
-                    gameState.maxXp += 50;
-                    alert(`🎉 LEVEL UP! You are now Level ${gameState.level}!`);
-                }
-                
-                saveProgress();
-                updateUI();
+      const lesson = gameState.trainingData.phases[0].modules[0].lessons[lessonIndex];
+      const body = document.getElementById('modalBody');
+
+      body.innerHTML = `
+        <div style="background: #1a1a2e; padding: 20px; border-radius: 8px; border: 2px solid #F5008B;">
+          <h3 style="color: #F5008B; margin-bottom: 15px;">${lesson.title}</h3>
+          <p style="line-height: 1.8; color: #ccc;">${lesson.content || 'Lesson content coming soon...'}</p>
+          <div class="btnGroup" style="margin-top: 20px;">
+            <button class="btn" onclick="completeLesson('${lessonKey}')">Mark as Complete (+100 XP)</button>
+            <button class="btn secondary" onclick="openQuestModal(gameState.questLocations.find(l => l.id === '${lessonKey.split('_')[0]}'))">Back to Lessons</button>
+          </div>
+        </div>
+      `;
+    };
+
+    // Complete lesson
+    window.completeLesson = function(lessonKey) {
+      if (!gameState.progress.completedLessons[lessonKey]) {
+        gameState.progress.completedLessons[lessonKey] = true;
+        addXP(100);
+
+        // Check if location is complete
+        const locationId = lessonKey.split('_')[0];
+        const location = gameState.questLocations.find(l => l.id === locationId);
+
+        if (location && !gameState.progress.completedLocations.includes(locationId)) {
+          // Check if all lessons for this location are complete
+          const locationLessons = Object.keys(gameState.progress.completedLessons)
+            .filter(key => key.startsWith(locationId + '_'));
+
+          if (locationLessons.length >= 1) { // Simplified: complete location after 1 lesson
+            gameState.progress.completedLocations.push(locationId);
+
+            // Unlock next location
+            const currentIndex = gameState.questLocations.findIndex(l => l.id === locationId);
+            if (currentIndex >= 0 && currentIndex < gameState.questLocations.length - 1) {
+              gameState.questLocations[currentIndex + 1].unlocked = true;
             }
-            
-            enterLocation(gameState.currentLocation);
+
+            alert(`🎉 ${location.name} Complete! Next location unlocked!`);
+          }
         }
 
-        // Complete Castle
-        function completeCastle() {
-            if (!gameState.completed.includes('castle')) {
-                gameState.completed.push('castle');
-                gameState.xp += 10;
-                saveProgress();
-                updateUI();
-            }
-            closeModal();
-        }
+        saveProgress();
+        openQuestModal(location);
+      }
+    };
 
-        // Check if location is locked
-        function isLocked(location) {
-            const requirements = {
-                'toolshop': 'castle',
-                'forge': 'toolshop',
-                'workshop': 'forge',
-                'market': 'workshop',
-                'service': 'market'
-            };
-            
-            const required = requirements[location];
-            return required && !gameState.completed.includes(required);
-        }
+    // Close modal
+    window.closeModal = function() {
+      document.getElementById('questModal').classList.remove('active');
+    };
 
-        // Get Location Name
-        function getLocationName(location) {
-            const names = {
-                'map': 'Exploring the Realm',
-                'castle': 'Royal Castle',
-                'toolshop': 'Tool Shop',
-                'forge': 'The Forge',
-                'workshop': 'Production Workshop',
-                'market': 'Market Square',
-                'service': 'Service Hall'
-            };
-            return names[location] || 'Unknown';
-        }
+    // Initialize game
+    async function init() {
+      loadProgress();
+      await fetchTrainingData();
+      document.getElementById('loadingScreen').classList.add('hidden');
+      gameLoop();
+    }
 
-        // Close Modal
-        function closeModal() {
-            document.getElementById('modal').classList.remove('active');
-            gameState.currentLocation = 'map';
-            document.getElementById('location-name').textContent = 'Exploring the Realm';
-        }
-
-        // Close modal on background click
-        document.getElementById('modal').addEventListener('click', (e) => {
-            if (e.target.id === 'modal') {
-                closeModal();
-            }
-        });
-
-        // Initialize
-        window.addEventListener('load', () => {
-            loadProgress();
-            fetchTrainingData();
-            updateUI();
-        });
-    </script>
+    // Start game when page loads
+    window.addEventListener('load', init);
+  </script>
 </body>
 </html>
